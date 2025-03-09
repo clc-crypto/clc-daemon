@@ -37,7 +37,6 @@ function register(app: Express, config: Config) {
             console.log("Took to long? " + (Date.now() - lastFound > TARGET));
             if (Date.now() - lastFound > TARGET) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
             else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
-            console.log(DIFF);
             DIFF = DIFF.padStart(64, '0');
 
             SEED = Math.random() + "" + Math.random() + "";
