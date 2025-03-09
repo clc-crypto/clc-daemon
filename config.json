@@ -1,0 +1,8 @@
+{
+  "apiPort": 3000,
+  "ledgerDirectory": "./ledger",
+  "startingDiff": "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+  "reward": 50,
+  "target": 60000,
+  "adjust": "28f5c28f5c28f6000000000000000000000000000000000000000000000"
+}

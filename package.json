@@ -1,0 +1,21 @@
+{
+  "name": "clt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/elliptic": "^6.4.18",
+    "@types/express": "^5.0.0",
+    "commander": "^13.1.0",
+    "elliptic": "^6.6.1",
+    "express": "^4.21.2",
+    "readline-sync": "^1.4.10"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "private": true
+}
