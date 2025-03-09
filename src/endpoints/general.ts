@@ -4,6 +4,7 @@ import createMinedCoin from "../addMinedCoin";
 import {addTransaction, getCoin} from "../ledger";
 import {mergeCoins} from "../merge";
 import {splitCoins} from "../split";
+import fs from "fs";
 
 function register(app: Express, config: Config) {
     app.get("/transaction", (req, res) => {
@@ -47,7 +48,7 @@ function register(app: Express, config: Config) {
         }
     });
 
-    app.get("/coin/:id", (req, res) => {
+    app.get("/coin/:id", async (req, res) => {
         try {
             if (!req.params.id) throw new Error("origin parameter required");
 
@@ -56,6 +57,10 @@ function register(app: Express, config: Config) {
             res.status(400).json({ "error": e.message });
         }
     });
+
+    app.get("/ledger-length", async (req, res) =>  {
+        res.json({ length: parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8")) });
+    })
 }
 
 export default register;
