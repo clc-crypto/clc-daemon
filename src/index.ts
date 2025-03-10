@@ -1,14 +1,16 @@
 import express from 'express';
 import fs from 'fs';
+import cors from 'cors';
 import { loadLedger } from "./ledger";
 import Config from "./types/config";
 import register from "./endpoints/mining";
 import registerGeneral from "./endpoints/general";
-import {ec} from "elliptic";
-import {hash} from "crypto";
 
 const config: Config = JSON.parse(fs.readFileSync("config.json", 'utf8'));
 const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
 
 loadLedger(config);
 

@@ -7,9 +7,11 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
     "@types/elliptic": "^6.4.18",
     "@types/express": "^5.0.0",
     "commander": "^13.1.0",
+    "cors": "^2.8.5",
     "elliptic": "^6.6.1",
     "express": "^4.21.2",
     "readline-sync": "^1.4.10"
