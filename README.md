@@ -10,6 +10,10 @@ Clone this repository locally
 ```bash
 git clone https://github.com/clc-crypto/clc-daemon.git
 ```
+Install packages
+```bash
+npm install
+```
 Compile into JavaScript
 ```bash
 tsc
