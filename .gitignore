@@ -1,5 +1,4 @@
 /ledger/
-/dist/
 /node_modules/
 package-lock.json
 diff.save
