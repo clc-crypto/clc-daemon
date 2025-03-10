@@ -40,6 +40,7 @@ function register(app: Express, config: Config) {
 
             if (Date.now() - lastFound > TARGET) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
             else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
+            DIFF = DIFF.replace('-', '');
             DIFF = DIFF.padStart(64, '0');
 
             fs.writeFileSync("diff.save", DIFF);
