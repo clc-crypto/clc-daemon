@@ -2,7 +2,7 @@ import Config from "./types/config";
 import { ec } from "elliptic";
 import { Coin } from "./types/ledger";
 import fs from "fs";
-import { hash } from "crypto";
+import { sha256 } from "./cryptoUtils";
 
 const ecdsa = new ec('secp256k1');
 
@@ -48,9 +48,8 @@ function getCoin(id: number): Coin {
 function addTransaction(id: number, newHolder: string, transactionSignature: string) {
     const coin: Coin = getCoin(id);
     const previousOwner: string = coin.transactions[coin.transactions.length - 1].holder;
-    const ecdsa = new ec('secp256k1');
     const key = ecdsa.keyFromPublic(previousOwner, 'hex');
-    if (!key.verify(hash("sha256", newHolder, "hex"), transactionSignature)) throw new InvalidTransactionSignatureError();
+    if (!key.verify(sha256(newHolder), transactionSignature)) throw new InvalidTransactionSignatureError();
     coin.transactions.push({
         holder: newHolder,
         transactionSignature: transactionSignature

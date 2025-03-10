@@ -1,6 +1,5 @@
 import { Express } from "express";
 import Config from "../types/config";
-import createMinedCoin from "../addMinedCoin";
 import {addTransaction, getCoin} from "../ledger";
 import {mergeCoins} from "../merge";
 import {splitCoins} from "../split";

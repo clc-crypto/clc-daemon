@@ -1,4 +1,4 @@
-    import { hash } from "crypto";
+    import { sha256 } from "./cryptoUtils";
     import { ec } from "elliptic";
     import fs from "fs";
 
@@ -47,7 +47,7 @@
             const publicKeyHex = key.getPublic().encode("hex", false);
 
             // Compute SHA-256 hash
-            const hashHex = hash("sha256", publicKeyHex + SEED, "hex");
+            const hashHex = sha256(publicKeyHex + SEED);
 
             if (i % 100 === 0) console.log("Mining... " + i + " | " + hashHex);
 
@@ -60,7 +60,7 @@
                 console.log("Hash")
                 console.log(hashHex);
                 console.log("Mining Signature");
-                const sign = key.sign(hash("sha256", key.getPublic().encode("hex", false), "hex")).toDER("hex");
+                const sign = key.sign(sha256(key.getPublic().encode("hex", false))).toDER("hex");
                 console.log(sign);
                 (async () => {
                     console.log("Requesting reward...");

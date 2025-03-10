@@ -1,4 +1,4 @@
-import { hash } from "crypto";
+import { sha256 } from "./cryptoUtils";
 import { Coin } from "./types/ledger";
 import fs from "fs";
 import { incrementLastId, LedgerNotInitializedError } from "./ledger";
@@ -21,9 +21,9 @@ function createMinedCoin(LEDGER_PATH: string, val: number, holder: string, minin
     if (LEDGER_PATH === null) throw new LedgerNotInitializedError();
 
     const key = ecdsa.keyFromPublic(holder, 'hex');
-    if (!key.verify(hash("sha256", holder, "hex"), miningSignature) && miningSignature !== "split") throw new InvalidMinerSignatureError();
+    if (!key.verify(sha256(holder), miningSignature) && miningSignature !== "split") throw new InvalidMinerSignatureError();
     if (BigInt("0x" + diff) < BigInt("0x" + minedHash)) throw new InvalidMinedHashError();
-    if (hash("sha256", key.getPublic().encode("hex", false) + seed) !== minedHash) throw new InvalidMinedHashError();
+    if (sha256(key.getPublic().encode("hex", false) + seed) !== minedHash) throw new InvalidMinedHashError();
 
     incrementLastId();
     const coin: Coin = {

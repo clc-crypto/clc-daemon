@@ -1,5 +1,5 @@
 import { getCoin, incrementLastId } from "./ledger";
-import { hash } from "crypto";
+import { sha256 } from "./cryptoUtils";
 import { ec } from "elliptic";
 import fs from "fs";
 import { mergeCoins } from "./merge";
@@ -37,7 +37,7 @@ function splitCoins(LEDGER_PATH: string, originId: number, targetId: number, mer
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
 
-    if (!originKey.verify(hash("sha256", targetId + " 0 " + vol, "hex"), mergeSignature)) throw new InvalidSplitOriginMergeSignatureError();
+    if (!originKey.verify(sha256(targetId + " 0 " + vol), mergeSignature)) throw new InvalidSplitOriginMergeSignatureError();
 
     incrementLastId();
     const coin: Coin = {

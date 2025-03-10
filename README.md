@@ -52,6 +52,10 @@ Highly deprecated legacy miner. Inefficient and redundant. [For mining check thi
 
 Contains function to split coins.
 
+```/src/cryptoUtils.ts```
+
+Contains cryptographic helper functions.
+
 ```/src/types```
 
 Contains all the types used in this project.

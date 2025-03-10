@@ -1,5 +1,5 @@
 import { getCoin } from "./ledger";
-import { hash } from "crypto";
+import { sha256 } from "./cryptoUtils";
 import { ec } from "elliptic";
 import fs from "fs";
 
@@ -24,7 +24,7 @@ function mergeCoins(LEDGER_PATH: string, originId: number, targetId: number, sig
     if (vol > origin.val) throw new InvalidMergeVolumeError();
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
-    if (!originKey.verify(hash("sha256", targetId + " " + target.transactions.length + " " + vol, "hex"), signature)) throw new InvalidMergeOriginSignatureError();
+    if (!originKey.verify(sha256(targetId + " " + target.transactions.length + " " + vol), signature)) throw new InvalidMergeOriginSignatureError();
 
     origin.transactions.push({
         holder: origin.transactions[origin.transactions.length - 1].holder,
