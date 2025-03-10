@@ -1,11 +1,13 @@
 import { Express } from "express";
 import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
+import fs from "fs";
 
 function register(app: Express, config: Config) {
     let SEED: string = Math.random() + "" + Math.random() + "";
     let REWARD: number = config.reward; // one reward is 0.2 CLC
     let DIFF: string = config.startingDiff;
+    if (fs.existsSync("diff.save")) DIFF = fs.readFileSync("diff.save", "utf-8");
     let TARGET: number = config.target; // 6 minutes per reward
 
     let lastFound = Date.now();
@@ -35,8 +37,11 @@ function register(app: Express, config: Config) {
             console.log();
             console.log("Mined #" + id + " | " + req.query.hash + " | diff: " + DIFF + " | in: " + (Date.now() - lastFound));
             console.log("Took to long? " + (Date.now() - lastFound > TARGET));
+
             if (Date.now() - lastFound > TARGET) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
             else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
+            fs.writeFileSync("diff.save", DIFF);
+
             DIFF = DIFF.padStart(64, '0');
 
             SEED = Math.random() + "" + Math.random() + "";
