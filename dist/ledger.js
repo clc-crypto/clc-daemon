@@ -10,7 +10,7 @@ exports.getCoin = getCoin;
 exports.loadLedger = loadLedger;
 const elliptic_1 = require("elliptic");
 const fs_1 = __importDefault(require("fs"));
-const crypto_1 = require("crypto");
+const cryptoUtils_1 = require("./cryptoUtils");
 const ecdsa = new elliptic_1.ec('secp256k1');
 let LEDGER_PATH = null;
 let lastId = -1;
@@ -56,9 +56,8 @@ function getCoin(id) {
 function addTransaction(id, newHolder, transactionSignature) {
     const coin = getCoin(id);
     const previousOwner = coin.transactions[coin.transactions.length - 1].holder;
-    const ecdsa = new elliptic_1.ec('secp256k1');
     const key = ecdsa.keyFromPublic(previousOwner, 'hex');
-    if (!key.verify((0, crypto_1.hash)("sha256", newHolder, "hex"), transactionSignature))
+    if (!key.verify((0, cryptoUtils_1.sha256)(newHolder), transactionSignature))
         throw new InvalidTransactionSignatureError();
     coin.transactions.push({
         holder: newHolder,

@@ -1,25 +1,19 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const addMinedCoin_1 = __importDefault(require("../addMinedCoin"));
+const fs_1 = __importDefault(require("fs"));
 function register(app, config) {
     let SEED = Math.random() + "" + Math.random() + "";
     let REWARD = config.reward; // one reward is 0.2 CLC
     let DIFF = config.startingDiff;
+    if (fs_1.default.existsSync("diff.save"))
+        DIFF = fs_1.default.readFileSync("diff.save", "utf-8");
     let TARGET = config.target; // 6 minutes per reward
     let lastFound = Date.now();
-    app.get("/get-challenge", (req, res) => __awaiter(this, void 0, void 0, function* () {
+    app.get("/get-challenge", async (req, res) => {
         try {
             res.json({
                 seed: SEED,
@@ -32,7 +26,7 @@ function register(app, config) {
             console.log(e.message);
             res.status(502);
         }
-    }));
+    });
     // function createMinedCoin(LEDGER_PATH: string, val: number, holder: string, miningSignature: string, minedHash: string, seed: string, diff: string): number {
     app.get("/challenge-solved", (req, res) => {
         try {
@@ -51,8 +45,9 @@ function register(app, config) {
                 DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
             else
                 DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
-            console.log(DIFF);
+            DIFF = DIFF.replace('-', '');
             DIFF = DIFF.padStart(64, '0');
+            fs_1.default.writeFileSync("diff.save", DIFF);
             SEED = Math.random() + "" + Math.random() + "";
             console.log("New seed " + SEED);
             console.log("New diff " + DIFF);
@@ -61,6 +56,7 @@ function register(app, config) {
             lastFound = Date.now();
         }
         catch (e) {
+            setTimeout(() => { throw e; });
             res.status(400).json({ "error": e.message });
         }
     });

@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const ledger_1 = require("../ledger");
 const merge_1 = require("../merge");
 const split_1 = require("../split");
+const fs_1 = __importDefault(require("fs"));
 function register(app, config) {
     app.get("/transaction", (req, res) => {
         try {
@@ -53,7 +57,7 @@ function register(app, config) {
             res.status(400).json({ "error": e.message });
         }
     });
-    app.get("/coin/:id", (req, res) => {
+    app.get("/coin/:id", async (req, res) => {
         try {
             if (!req.params.id)
                 throw new Error("origin parameter required");
@@ -62,6 +66,9 @@ function register(app, config) {
         catch (e) {
             res.status(400).json({ "error": e.message });
         }
+    });
+    app.get("/ledger-length", async (req, res) => {
+        res.json({ length: parseInt(fs_1.default.readFileSync(config.ledgerDirectory + "/last.id", "utf-8")) });
     });
 }
 exports.default = register;

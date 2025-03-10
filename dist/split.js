@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidNewCoinId = exports.InvalidSplitVolumeError = exports.InvalidSplitOriginMergeSignatureError = exports.InvalidSplitOriginSignatureError = void 0;
 exports.splitCoins = splitCoins;
 const ledger_1 = require("./ledger");
-const crypto_1 = require("crypto");
+const cryptoUtils_1 = require("./cryptoUtils");
 const elliptic_1 = require("elliptic");
 const fs_1 = __importDefault(require("fs"));
 const merge_1 = require("./merge");
@@ -44,7 +44,7 @@ function splitCoins(LEDGER_PATH, originId, targetId, mergeSignature, vol) {
     if (vol > origin.val)
         throw new InvalidSplitVolumeError();
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
-    if (!originKey.verify((0, crypto_1.hash)("sha256", targetId + " 0 " + vol, "hex"), mergeSignature))
+    if (!originKey.verify((0, cryptoUtils_1.sha256)(targetId + " 0 " + vol), mergeSignature))
         throw new InvalidSplitOriginMergeSignatureError();
     (0, ledger_1.incrementLastId)();
     const coin = {

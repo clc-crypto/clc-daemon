@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvalidMergeOriginSignatureError = exports.InvalidMergeVolumeError = void 0;
 exports.mergeCoins = mergeCoins;
 const ledger_1 = require("./ledger");
-const crypto_1 = require("crypto");
+const cryptoUtils_1 = require("./cryptoUtils");
 const elliptic_1 = require("elliptic");
 const fs_1 = __importDefault(require("fs"));
 const ecdsa = new elliptic_1.ec('secp256k1');
@@ -30,7 +30,7 @@ function mergeCoins(LEDGER_PATH, originId, targetId, signature, vol) {
     if (vol > origin.val)
         throw new InvalidMergeVolumeError();
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
-    if (!originKey.verify((0, crypto_1.hash)("sha256", targetId + " " + target.transactions.length + " " + vol, "hex"), signature))
+    if (!originKey.verify((0, cryptoUtils_1.sha256)(targetId + " " + target.transactions.length + " " + vol), signature))
         throw new InvalidMergeOriginSignatureError();
     origin.transactions.push({
         holder: origin.transactions[origin.transactions.length - 1].holder,
