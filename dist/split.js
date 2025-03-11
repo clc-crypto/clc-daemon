@@ -44,7 +44,7 @@ function splitCoins(LEDGER_PATH, originId, targetId, mergeSignature, vol) {
     if (vol > origin.val)
         throw new InvalidSplitVolumeError();
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
-    if (!originKey.verify((0, cryptoUtils_1.sha256)(targetId + " 0 " + vol), mergeSignature))
+    if (!originKey.verify((0, cryptoUtils_1.sha256)(targetId + " 1 " + vol), mergeSignature))
         throw new InvalidSplitOriginMergeSignatureError();
     (0, ledger_1.incrementLastId)();
     const coin = {
