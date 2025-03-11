@@ -24,6 +24,7 @@ function mergeCoins(LEDGER_PATH: string, originId: number, targetId: number, sig
     if (vol > origin.val) throw new InvalidMergeVolumeError();
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
+    console.log(targetId + " " + target.transactions.length + " " + vol);
     if (!originKey.verify(sha256(targetId + " " + target.transactions.length + " " + vol), signature)) throw new InvalidMergeOriginSignatureError();
 
     origin.transactions.push({
