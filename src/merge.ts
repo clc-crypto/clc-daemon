@@ -41,7 +41,7 @@ function mergeCoins(LEDGER_PATH: string, originId: number, targetId: number, sig
 
     target.transactions.push({
         holder: target.transactions[target.transactions.length - 1].holder,
-        transactionSignature: target.transactions[origin.transactions.length - 1].transactionSignature,
+        transactionSignature: target.transactions[target.transactions.length - 1].transactionSignature,
         transformationType: "merge",
         transformation: {
             origin: originId,
