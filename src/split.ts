@@ -43,7 +43,12 @@ function splitCoins(LEDGER_PATH: string, originId: number, targetId: number, mer
     const coin: Coin = {
         val: 0,
         genesisTime: Date.now(),
-        transactions: []
+        transactions: [
+            {
+                holder: origin.transactions[origin.transactions.length - 1].holder,
+                transactionSignature: origin.transactions[origin.transactions.length - 1].transactionSignature,
+            }
+        ]
     }
 
     fs.writeFileSync(LEDGER_PATH + "/" + parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
