@@ -54,7 +54,6 @@ function register(app: Express, config: Config) {
 
             lastFound = Date.now();
         } catch (e: any) {
-            setTimeout(() => {throw e; });
             res.status(400).json({ "error": e.message });
         }
     });

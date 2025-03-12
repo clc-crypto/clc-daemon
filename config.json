@@ -1,5 +1,5 @@
 {
-  "apiPort": 3000,
+  "apiPort": 443,
   "ledgerDirectory": "./ledger",
   "startingDiff": "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
   "reward": 50,

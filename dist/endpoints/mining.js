@@ -56,7 +56,6 @@ function register(app, config) {
             lastFound = Date.now();
         }
         catch (e) {
-            setTimeout(() => { throw e; });
             res.status(400).json({ "error": e.message });
         }
     });

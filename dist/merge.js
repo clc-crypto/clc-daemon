@@ -3,8 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InvalidMergeOriginSignatureError = exports.InvalidMergeVolumeError = void 0;
-exports.mergeCoins = mergeCoins;
+exports.InvalidMergeOriginSignatureError = exports.InvalidMergeVolumeError = exports.mergeCoins = void 0;
 const ledger_1 = require("./ledger");
 const cryptoUtils_1 = require("./cryptoUtils");
 const elliptic_1 = require("elliptic");
@@ -58,3 +57,4 @@ function mergeCoins(LEDGER_PATH, originId, targetId, signature, vol) {
     fs_1.default.writeFileSync(LEDGER_PATH + "/" + originId + ".coin.json", JSON.stringify(origin, null, 2), "utf-8");
     fs_1.default.writeFileSync(LEDGER_PATH + "/" + targetId + ".coin.json", JSON.stringify(target, null, 2), "utf-8");
 }
+exports.mergeCoins = mergeCoins;

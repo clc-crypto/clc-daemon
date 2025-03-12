@@ -3,11 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LedgerNotInitializedError = exports.NonexistentCoinError = exports.InvalidTransactionSignatureError = void 0;
-exports.incrementLastId = incrementLastId;
-exports.addTransaction = addTransaction;
-exports.getCoin = getCoin;
-exports.loadLedger = loadLedger;
+exports.LedgerNotInitializedError = exports.NonexistentCoinError = exports.InvalidTransactionSignatureError = exports.loadLedger = exports.getCoin = exports.addTransaction = exports.incrementLastId = void 0;
 const elliptic_1 = require("elliptic");
 const fs_1 = __importDefault(require("fs"));
 const cryptoUtils_1 = require("./cryptoUtils");
@@ -36,6 +32,7 @@ function incrementLastId() {
     lastId++;
     fs_1.default.writeFileSync(LEDGER_PATH + "/last.id", lastId + "", 'utf-8');
 }
+exports.incrementLastId = incrementLastId;
 function loadLedger(config) {
     LEDGER_PATH = config.ledgerDirectory;
     if (!fs_1.default.existsSync(LEDGER_PATH)) {
@@ -46,6 +43,7 @@ function loadLedger(config) {
     else
         lastId = parseInt(fs_1.default.readFileSync(LEDGER_PATH + "/last.id", "utf-8"));
 }
+exports.loadLedger = loadLedger;
 function getCoin(id) {
     if (LEDGER_PATH === null)
         throw new LedgerNotInitializedError();
@@ -53,6 +51,7 @@ function getCoin(id) {
         throw new NonexistentCoinError(id);
     return JSON.parse(fs_1.default.readFileSync(LEDGER_PATH + "/" + id + ".coin.json", "utf-8"));
 }
+exports.getCoin = getCoin;
 function addTransaction(id, newHolder, transactionSignature) {
     const coin = getCoin(id);
     const previousOwner = coin.transactions[coin.transactions.length - 1].holder;
@@ -65,3 +64,4 @@ function addTransaction(id, newHolder, transactionSignature) {
     });
     fs_1.default.writeFileSync(LEDGER_PATH + "/" + lastId + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
 }
+exports.addTransaction = addTransaction;

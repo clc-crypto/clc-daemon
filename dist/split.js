@@ -3,8 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.InvalidNewCoinId = exports.InvalidSplitVolumeError = exports.InvalidSplitOriginMergeSignatureError = exports.InvalidSplitOriginSignatureError = void 0;
-exports.splitCoins = splitCoins;
+exports.InvalidNewCoinId = exports.InvalidSplitVolumeError = exports.InvalidSplitOriginMergeSignatureError = exports.InvalidSplitOriginSignatureError = exports.splitCoins = void 0;
 const ledger_1 = require("./ledger");
 const cryptoUtils_1 = require("./cryptoUtils");
 const elliptic_1 = require("elliptic");
@@ -60,3 +59,4 @@ function splitCoins(LEDGER_PATH, originId, targetId, mergeSignature, vol) {
     fs_1.default.writeFileSync(LEDGER_PATH + "/" + parseInt(fs_1.default.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
     (0, merge_1.mergeCoins)(LEDGER_PATH, originId, targetId, mergeSignature, vol);
 }
+exports.splitCoins = splitCoins;
