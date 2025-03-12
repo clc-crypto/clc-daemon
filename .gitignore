@@ -1,4 +1,5 @@
 /ledger/
+/cert/
 /node_modules/
 package-lock.json
 diff.save
