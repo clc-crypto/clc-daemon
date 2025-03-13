@@ -33,7 +33,7 @@ function register(app, config) {
                 throw new Error("sign parameter required");
             if (!req.query.vol)
                 throw new Error("vol parameter required");
-            (0, merge_1.mergeCoins)(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseInt(req.query.vol.toString()));
+            (0, merge_1.mergeCoins)(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseFloat(req.query.vol.toString()));
             res.json({ "message": "success" });
         }
         catch (e) {
@@ -50,7 +50,7 @@ function register(app, config) {
                 throw new Error("sign parameter required");
             if (!req.query.vol)
                 throw new Error("vol parameter required");
-            (0, split_1.splitCoins)(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseInt(req.query.vol.toString()));
+            (0, split_1.splitCoins)(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseFloat(req.query.vol.toString()));
             res.json({ "message": "success" });
         }
         catch (e) {
