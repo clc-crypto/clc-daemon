@@ -23,8 +23,8 @@ class InvalidSplitOriginMergeSignatureError extends Error {
 }
 exports.InvalidSplitOriginMergeSignatureError = InvalidSplitOriginMergeSignatureError;
 class InvalidSplitVolumeError extends Error {
-    constructor() {
-        super("The split operation's volume is invalid");
+    constructor(emsg) {
+        super("The split operation's volume is invalid" + (emsg ? ",  " + emsg : ""));
     }
 }
 exports.InvalidSplitVolumeError = InvalidSplitVolumeError;
@@ -38,10 +38,8 @@ function splitCoins(LEDGER_PATH, originId, targetId, mergeSignature, vol) {
     if (parseInt(fs_1.default.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + 1 !== targetId)
         throw new InvalidNewCoinId();
     const origin = (0, ledger_1.getCoin)(originId);
-    if (vol < 0.000001)
-        throw new InvalidSplitVolumeError();
     if (vol > origin.val)
-        throw new InvalidSplitVolumeError();
+        throw new InvalidSplitVolumeError("not enough funds at origin.");
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
     if (!originKey.verify((0, cryptoUtils_1.sha256)(targetId + " 1 " + vol), mergeSignature))
         throw new InvalidSplitOriginMergeSignatureError();
