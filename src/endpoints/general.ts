@@ -26,7 +26,7 @@ function register(app: Express, config: Config) {
             if (!req.query.sign) throw new Error("sign parameter required");
             if (!req.query.vol) throw new Error("vol parameter required");
 
-            mergeCoins(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseInt(req.query.vol.toString()));
+            mergeCoins(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseFloat(req.query.vol.toString()));
             res.json({ "message": "success" })
         } catch (e: any) {
             res.status(400).json({ "error": e.message });
@@ -40,7 +40,7 @@ function register(app: Express, config: Config) {
             if (!req.query.sign) throw new Error("sign parameter required");
             if (!req.query.vol) throw new Error("vol parameter required");
 
-            splitCoins(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseInt(req.query.vol.toString()));
+            splitCoins(config.ledgerDirectory, parseInt(req.query.origin.toString()), parseInt(req.query.target.toString()), req.query.sign.toString(), parseFloat(req.query.vol.toString()));
             res.json({ "message": "success" })
         } catch (e: any) {
             res.status(400).json({ "error": e.message });
