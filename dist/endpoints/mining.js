@@ -7,11 +7,14 @@ const addMinedCoin_1 = __importDefault(require("../addMinedCoin"));
 const fs_1 = __importDefault(require("fs"));
 function register(app, config) {
     let SEED = Math.random() + "" + Math.random() + "";
-    let REWARD = config.reward; // one reward is 0.2 CLC
+    let REWARD = config.reward;
     let DIFF = config.startingDiff;
+    let CIRCULATION = 0;
     if (fs_1.default.existsSync("diff.save"))
         DIFF = fs_1.default.readFileSync("diff.save", "utf-8");
-    let TARGET = config.target; // 6 minutes per reward
+    if (fs_1.default.existsSync("circulation.save"))
+        CIRCULATION = parseFloat(fs_1.default.readFileSync("circulation.save", "utf-8"));
+    let TARGET = config.target; // x ms / reward
     let lastFound = Date.now();
     app.get("/get-challenge", async (req, res) => {
         try {
@@ -38,9 +41,13 @@ function register(app, config) {
                 throw new Error("hash parameter required");
             const id = (0, addMinedCoin_1.default)(config.ledgerDirectory, REWARD, req.query.holder.toString(), req.query.sign.toString(), req.query.hash.toString(), SEED, DIFF);
             res.json({ id: id });
+            CIRCULATION += REWARD;
+            REWARD = (-CIRCULATION / (config.maxSupply / config.reward)) + config.reward;
+            fs_1.default.writeFileSync("circulation.save", CIRCULATION.toString());
             console.log();
             console.log("Mined #" + id + " | " + req.query.hash + " | diff: " + DIFF + " | in: " + (Date.now() - lastFound));
             console.log("Took to long? " + (Date.now() - lastFound > TARGET));
+            console.log("New reward: " + REWARD);
             if (Date.now() - lastFound > TARGET)
                 DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
             else
@@ -56,7 +63,6 @@ function register(app, config) {
             lastFound = Date.now();
         }
         catch (e) {
-            setTimeout(() => { throw e; });
             res.status(400).json({ "error": e.message });
         }
     });

@@ -5,6 +5,7 @@ type Config = {
     startingDiff: string,
     target: number,
     adjust: bigint,
+    maxSupply: number
 }
 
 export default Config;
