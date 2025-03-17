@@ -12,7 +12,7 @@ const app = express();
 // Enable CORS for all origins
 app.use(cors());
 
-const useHttps: boolean = true;
+const useHttps: boolean = false;
 
 loadLedger(config);
 

@@ -59,7 +59,11 @@ function register(app: Express, config: Config) {
 
     app.get("/ledger-length", async (req, res) =>  {
         res.json({ length: parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8")) });
-    })
+    });
+
+    app.get("/circulation", async (req, res) =>  {
+        res.json({ circulation: parseInt(fs.readFileSync("circulation.save", "utf-8")) });
+    });
 }
 
 export default register;
