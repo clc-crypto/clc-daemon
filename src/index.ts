@@ -13,6 +13,8 @@ const app = express();
 // Enable CORS for all origins
 app.use(cors());
 
+const useHttps: boolean = true;
+
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/privkey.pem', 'utf8');
 const certificate = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/fullchain.pem', 'utf8');
 const credentials = { key: privateKey, cert: certificate };
@@ -22,6 +24,12 @@ loadLedger(config);
 register(app, config);
 registerGeneral(app, config);
 
-https.createServer(credentials, app).listen(config.apiPort, () => {
-    console.log(`Server running on http://localhost:${config.apiPort}`);
-});
+if (useHttps) {
+    https.createServer(credentials, app).listen(config.apiPort, () => {
+        console.log(`Server running on https://localhost:${config.apiPort}`);
+    });
+} else {
+    app.listen(config.apiPort, () => {
+        console.log(`Server running on http://localhost:${config.apiPort}`);
+    });
+}
