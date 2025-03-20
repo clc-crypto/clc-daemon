@@ -50,7 +50,7 @@ Contains function to merge coins.
 
 ```/src/miner.ts```
 
-Highly deprecated legacy miner. Inefficient and redundant. [For mining check this repository.](https:github.com/clc-crypto/clc-miner)
+Highly deprecated legacy miner. Inefficient and redundant. [For mining check this repository.](https://github.com/clc-crypto/clc-miner)
 
 ```/src/miner.ts```
 
