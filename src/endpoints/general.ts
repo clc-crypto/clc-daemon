@@ -62,7 +62,7 @@ function register(app: Express, config: Config) {
     });
 
     app.get("/circulation", async (req, res) =>  {
-        res.json({ circulation: parseInt(fs.readFileSync("circulation.save", "utf-8")) });
+        res.json({ circulation: parseFloat(fs.readFileSync("circulation.save", "utf-8")) });
     });
 }
 
