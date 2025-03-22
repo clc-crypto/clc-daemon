@@ -11,9 +11,16 @@ class InvalidMinerSignatureError extends Error {
         super("The miner provided an invalid signature when creating a coin");
     }
 }
+
 class InvalidMinedHashError extends Error {
     constructor() {
         super("The miner provided an invalid mined hash");
+    }
+}
+
+class MinedHashDifficultyError extends Error {
+    constructor() {
+        super("The miner provided a valid hash, but it did not meet the required difficulty");
     }
 }
 
@@ -22,7 +29,7 @@ function createMinedCoin(LEDGER_PATH: string, val: number, holder: string, minin
 
     const key = ecdsa.keyFromPublic(holder, 'hex');
     if (!key.verify(sha256(holder), miningSignature) && miningSignature !== "split") throw new InvalidMinerSignatureError();
-    if (BigInt("0x" + diff) < BigInt("0x" + minedHash)) throw new InvalidMinedHashError();
+    if (BigInt("0x" + diff) < BigInt("0x" + minedHash)) throw new MinedHashDifficultyError();
     if (sha256(key.getPublic().encode("hex", false) + seed) !== minedHash) throw new InvalidMinedHashError();
 
     incrementLastId();
