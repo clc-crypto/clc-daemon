@@ -1,9 +1,0 @@
-{
-  "apiPort": 6160,
-  "ledgerDirectory": "./ledger",
-  "startingDiff": "00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-  "reward": 50,
-  "target": 60000,
-  "adjust": "7AE147AE147AE20000000000000000000000000000000000000000000",
-  "maxSupply": 50000000
-}

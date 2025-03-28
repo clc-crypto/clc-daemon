@@ -140,7 +140,7 @@ Transacts a coin
 Transacts a coin
 * originId: the id of the coin to take the funds out of
 * targetId: the id of the coin to push the funds into
-* signature: the current owners signature on the ```"[targetId] [the length of the targets transactons + 1] [volume]"```
+* signature: the current owners signature on the ```"[targetId] [the length of the targets transactions + 1] [volume]"```
 * volume: how much funds to move, must be more than 0 and smaller or equal to the value of the origin coin.
 
 ### /split?origin=[originId]&target=[targetId]&sign=[signature]&vol=[volume]
