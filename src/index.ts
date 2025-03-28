@@ -1,35 +1,65 @@
-import express from 'express';
+import net from 'net';
 import fs from 'fs';
-import cors from 'cors';
 import { loadLedger } from "./ledger";
 import Config from "./types/config";
-import register from "./endpoints/mining";
+import {setUp, register} from "./endpoints/mining";
 import registerGeneral from "./endpoints/general";
+import syncDaemon from "./syncDaemon";
 
+// Load config
 const config: Config = JSON.parse(fs.readFileSync("config.json", 'utf8'));
-const app = express();
-
-// Enable CORS for all origins
-app.use(cors());
-
-const useHttps: boolean = false;
 
 loadLedger(config);
+(async () => {
+    if (process.argv.length == 4 && (process.argv[2] === "--sync" || process.argv[2] === "-s")) {
+        await syncDaemon(process.argv[3], config);
+        console.log("Synced!");
+    }
+    setUp(config);
+    // Create a TCP server
+    const server = net.createServer((socket) => {
+        registerGeneral(socket, config);
+        register(socket, config);
 
-register(app, config);
-registerGeneral(app, config);
+        socket.on('data', data => {
+            try {
+                const request = JSON.parse(data.toString());
+                switch (request.endpoint) {
+                    case "transaction":
+                        break;
+                    case "merge":
+                        break;
+                    case "split":
+                        break;
+                    case "coin":
+                        break;
+                    case "coins":
+                        break;
+                    case "coin-hashes":
+                        break;
+                    case "ledger-length":
+                        break;
+                    case "circulation":
+                        break;
+                    case "get-challenge":
+                        break;
+                    case "challenge-solved":
+                        break;
+                    default:
+                        socket.write(JSON.stringify({ error: "No such endpoint: " + request.endpoint }));
+                }
+            } catch (e: any) {
+                socket.write(e.message);
+            }
+        });
 
-if (useHttps) {
-    const https = require('https');
-
-    const privateKey = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/privkey.pem', 'utf8');
-    const certificate = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/fullchain.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
-    https.createServer(credentials, app).listen(config.apiPort, () => {
-        console.log(`Server running on https://localhost:${config.apiPort}`);
+        socket.on('error', (err) => {
+            console.error(`Socket error: ${err.message}`);
+        });
     });
-} else {
-    app.listen(config.apiPort, () => {
-        console.log(`Server running on http://localhost:${config.apiPort}`);
+
+    // Start the server on the specified port
+    server.listen(config.apiPort, () => {
+        console.log(`TCP server running on tcp://localhost:${config.apiPort}`);
     });
-}
+})();

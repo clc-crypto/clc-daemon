@@ -54,7 +54,7 @@ function addTransaction(id: number, newHolder: string, transactionSignature: str
         holder: newHolder,
         transactionSignature: transactionSignature
     });
-    fs.writeFileSync(LEDGER_PATH + "/" + lastId + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
+    fs.writeFileSync(LEDGER_PATH + "/" + id + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
 }
 
 export { incrementLastId, addTransaction, getCoin, loadLedger, InvalidTransactionSignatureError, NonexistentCoinError, LedgerNotInitializedError };
