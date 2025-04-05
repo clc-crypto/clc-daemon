@@ -27,7 +27,7 @@ function register(socket: Socket, config: Config) {
                     if (!request.origin || !request.target || !request.sign || !request.vol) {
                         throw new Error("Missing required parameters");
                     }
-                    mergeCoins(config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
+                    mergeCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
                     socket.write(JSON.stringify({ message: "success" }));
                 } catch (e: any) {
                     socket.write(JSON.stringify({ error: e.message }));
@@ -39,7 +39,7 @@ function register(socket: Socket, config: Config) {
                     if (!request.origin || !request.target || !request.sign || !request.vol) {
                         throw new Error("Missing required parameters");
                     }
-                    splitCoins(config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
+                    splitCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
                     socket.write(JSON.stringify({ message: "success" }));
                 } catch (e: any) {
                     socket.write(JSON.stringify({ error: e.message }));
