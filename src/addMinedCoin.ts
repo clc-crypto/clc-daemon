@@ -39,6 +39,7 @@ function createMinedCoin(LEDGER_PATH: string, val: number, holder: string, minin
         seed: seed,
         diff: diff,
         hash: minedHash,
+        paidFee: false,
         transactions: [
             {
                 holder: holder,

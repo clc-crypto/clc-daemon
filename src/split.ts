@@ -4,6 +4,7 @@ import { ec } from "elliptic";
 import fs from "fs";
 import { mergeCoins } from "./merge";
 import {Coin} from "./types/ledger";
+import Config from "./types/config";
 
 const ecdsa = new ec('secp256k1');
 
@@ -27,12 +28,19 @@ class InvalidNewCoinId extends Error {
         super("Invalid split operation's new coin id");
     }
 }
+class FeeNotPaidError extends Error {
+    constructor(id: number) {
+        super("Please pay dev fees for coin #" + id);
+    }
+}
 
-function splitCoins(LEDGER_PATH: string, originId: number, targetId: number, mergeSignature: string, vol: number) {
+function splitCoins(config: Config, LEDGER_PATH: string, originId: number, targetId: number, mergeSignature: string, vol: number) {
     if (parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + 1 !== targetId) throw new InvalidNewCoinId();
     const origin = getCoin(originId);
 
     if (vol > origin.val) throw new InvalidSplitVolumeError("not enough funds at origin.");
+
+    if (origin.paidFee !== undefined && !origin.paidFee) throw new FeeNotPaidError(originId);
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
 
@@ -52,7 +60,7 @@ function splitCoins(LEDGER_PATH: string, originId: number, targetId: number, mer
 
     fs.writeFileSync(LEDGER_PATH + "/" + parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
 
-    mergeCoins(LEDGER_PATH, originId, targetId, mergeSignature, vol);
+    mergeCoins(config, LEDGER_PATH, originId, targetId, mergeSignature, vol);
 }
 
 export { splitCoins, InvalidSplitOriginSignatureError, InvalidSplitOriginMergeSignatureError, InvalidSplitVolumeError, InvalidNewCoinId };

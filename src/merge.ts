@@ -2,6 +2,7 @@ import { getCoin } from "./ledger";
 import { sha256 } from "./cryptoUtils";
 import { ec } from "elliptic";
 import fs from "fs";
+import Config from "./types/config";
 
 const ecdsa = new ec('secp256k1');
 
@@ -15,13 +16,20 @@ class InvalidMergeVolumeError extends Error {
         super("The merge operation's volume is invalid");
     }
 }
+class FeeNotPaidError extends Error {
+    constructor(id: number) {
+        super("Please pay dev fees for coin #" + id);
+    }
+}
 
-function mergeCoins(LEDGER_PATH: string, originId: number, targetId: number, signature: string, vol: number) {
+function mergeCoins(config: Config, LEDGER_PATH: string, originId: number, targetId: number, signature: string, vol: number) {
     const origin = getCoin(originId);
     const target = getCoin(targetId);
 
-    if (vol < 0.000001) throw new InvalidMergeVolumeError();
+    if (vol < 0.00000001) throw new InvalidMergeVolumeError();
     if (vol > origin.val) throw new InvalidMergeVolumeError();
+
+    if (!origin.paidFee && originId !== config.devFeeAddress && vol < origin.val * config.devFeePercent) throw new FeeNotPaidError(originId);
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
     if (!originKey.verify(sha256(targetId + " " + target.transactions.length + " " + vol), signature)) throw new InvalidMergeOriginSignatureError();

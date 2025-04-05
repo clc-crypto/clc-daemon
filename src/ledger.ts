@@ -24,6 +24,11 @@ class NonexistentCoinError extends Error {
         super("Coin #" + id + " doesn't exist");
     }
 }
+class FeeNotPaidError extends Error {
+    constructor(id: number) {
+        super("Please pay dev fees for coin #" + id);
+    }
+}
 
 function incrementLastId() {
     lastId++;
@@ -47,6 +52,7 @@ function getCoin(id: number): Coin {
 
 function addTransaction(id: number, newHolder: string, transactionSignature: string) {
     const coin: Coin = getCoin(id);
+    if (coin.paidFee !== undefined && !coin.paidFee) throw new FeeNotPaidError(id);
     const previousOwner: string = coin.transactions[coin.transactions.length - 1].holder;
     const key = ecdsa.keyFromPublic(previousOwner, 'hex');
     if (!key.verify(sha256(newHolder), transactionSignature)) throw new InvalidTransactionSignatureError();

@@ -21,6 +21,7 @@ type Transaction = {
 type Coin = {
     val: number, // the value of the coin (what amount of 1 coin is it worth)
     genesisTime: number,
+    paidFee?: boolean,
     seed?: string,
     diff?: string,
     hash?: string,
