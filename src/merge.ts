@@ -58,7 +58,7 @@ function mergeCoins(config: Config, LEDGER_PATH: string, originId: number, targe
         }
     });
     target.val += vol;
-
+    origin.paidFee = true;
     fs.writeFileSync(LEDGER_PATH + "/" + originId + ".coin.json", JSON.stringify(origin, null, 2), "utf-8");
     fs.writeFileSync(LEDGER_PATH + "/" + targetId + ".coin.json", JSON.stringify(target, null, 2), "utf-8");
 }
