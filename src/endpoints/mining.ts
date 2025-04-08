@@ -10,6 +10,7 @@ let CIRCULATION: number = 0;
 if (fs.existsSync("diff.save")) DIFF = fs.readFileSync("diff.save", "utf-8");
 if (fs.existsSync("circulation.save")) CIRCULATION = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
 let TARGET: number = 60000; // x ms / reward
+
 function setUp(config: Config) {
     REWARD = config.reward;
     TARGET = config.target;
@@ -27,12 +28,12 @@ function register(socket: Socket, config: Config) {
                     diff: DIFF,
                     reward: REWARD,
                     lastFound: lastFound
-                }));
+                }) + "\x1e");
             } else if (request.endpoint === "challenge-solved") {
                 handleChallengeSolved(request, socket);
             }
         } catch (e: any) {
-            console.log({ error: e.message });
+            socket.write(JSON.stringify({ error: e.message }) + "\x1e");
         }
     });
 
@@ -63,11 +64,11 @@ function register(socket: Socket, config: Config) {
             console.log("=".repeat(process.stdout.columns));
 
             lastFound = Date.now();
-            socket.write(JSON.stringify({ id: id }));
+            socket.write(JSON.stringify({ id: id }) + "\x1e");
         } catch (e: any) {
-            socket.write(JSON.stringify({ error: e.message }));
+            socket.write(JSON.stringify({ error: e.message }) + "\x1e");
         }
     }
 }
 
-export {register,  setUp};
+export {register, setUp};

@@ -16,9 +16,9 @@ function register(socket: Socket, config: Config) {
                         throw new Error("Missing required parameters");
                     }
                     addTransaction(parseInt(request.cid), request.newholder, request.sign);
-                    socket.write(JSON.stringify({ message: "success" }));
+                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -28,9 +28,9 @@ function register(socket: Socket, config: Config) {
                         throw new Error("Missing required parameters");
                     }
                     mergeCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
-                    socket.write(JSON.stringify({ message: "success" }));
+                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -40,9 +40,9 @@ function register(socket: Socket, config: Config) {
                         throw new Error("Missing required parameters");
                     }
                     splitCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
-                    socket.write(JSON.stringify({ message: "success" }));
+                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -50,9 +50,9 @@ function register(socket: Socket, config: Config) {
                 try {
                     if (request.id === undefined) throw new Error("Missing coin ID");
                     const coin = getCoin(request.id);
-                    socket.write(JSON.stringify({coin}));
+                    socket.write(JSON.stringify({coin}) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -66,9 +66,9 @@ function register(socket: Socket, config: Config) {
                     for (const id of request.ids) {
                         res[parseInt(id)] = getCoin(parseInt(id));
                     }
-                    socket.write(JSON.stringify(res));
+                    socket.write(JSON.stringify(res) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -82,18 +82,18 @@ function register(socket: Socket, config: Config) {
                     for (const id of request.ids) {
                         res[id] = sha256(JSON.stringify(getCoin(id).transactions));
                     }
-                    socket.write(JSON.stringify(res));
+                    socket.write(JSON.stringify(res) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
             function handleLedgerLength(socket: Socket) {
                 try {
                     const length = parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8"));
-                    socket.write(JSON.stringify({length}));
+                    socket.write(JSON.stringify({length}) + "\x1e");
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
 
@@ -102,7 +102,7 @@ function register(socket: Socket, config: Config) {
                     const circulation = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
                     socket.write(JSON.stringify({circulation}));
                 } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }));
+                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }
             }
             const request = JSON.parse(data.toString());
