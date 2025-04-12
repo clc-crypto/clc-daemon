@@ -100,7 +100,7 @@ function register(socket: Socket, config: Config) {
             function handleCirculation(socket: Socket) {
                 try {
                     const circulation = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
-                    socket.write(JSON.stringify({circulation}));
+                    socket.write(JSON.stringify({ circulation: circulation}) + "\x1e");
                 } catch (e: any) {
                     socket.write(JSON.stringify({ error: e.message }) + "\x1e");
                 }

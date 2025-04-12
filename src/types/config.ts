@@ -4,6 +4,7 @@ type Config = {
     reward: number,
     startingDiff: string,
     target: number,
+    targetTimeout: number,
     adjust: bigint,
     maxSupply: number,
     devFeeAddress: number,
