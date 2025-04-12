@@ -16,6 +16,8 @@ function setUp(config: Config) {
     TARGET = config.target;
     DIFF = config.startingDiff;
     if (fs.existsSync("diff.save")) DIFF = fs.readFileSync("diff.save", "utf-8");
+
+    console.log("Target timeout: " + config.targetTimeout);
 }
 
 let toID: null | NodeJS.Timeout = null;
@@ -36,6 +38,7 @@ function cycle(config: Config) {
     lastFound = Date.now();
 
     toID = setTimeout(() => {
+        console.log("Took to long!");
         cycle(config);
     }, config.targetTimeout);
 }
