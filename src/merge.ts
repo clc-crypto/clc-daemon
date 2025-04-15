@@ -29,8 +29,13 @@ function mergeCoins(config: Config, LEDGER_PATH: string, originId: number, targe
     if (vol < 0.00000001) throw new InvalidMergeVolumeError();
     if (vol > origin.val) throw new InvalidMergeVolumeError();
 
-    if (origin.paidFee !== undefined && !origin.paidFee && originId !== config.devFeeAddress && vol < origin.val * config.devFeePercent) throw new FeeNotPaidError(originId);
-
+    //Fix for dev fee check: Only check the fee condition if it hasn't been paid, and the target is the dev fee address
+    if (origin.paidFee === undefined || origin.paidFee) {
+        // No fee needed or fee already paid, bypass fee check
+    } else if (!origin.paidFee && !(targetId === config.devFeeAddress && vol >= origin.val * config.devFeePercent)) {
+        // If fee is not paid, and the transaction is merging into the dev fee address, and it's within the allowed percentage, throw an error
+        throw new FeeNotPaidError(originId);
+    }
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
     if (!originKey.verify(sha256(targetId + " " + target.transactions.length + " " + vol), signature)) throw new InvalidMergeOriginSignatureError();
 
