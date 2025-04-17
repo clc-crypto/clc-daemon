@@ -15,7 +15,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/transaction", (req, res) => {
-        const { cid, sign, newholder } = req.body || req.query;
+        const { cid, sign, newholder } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!cid || !sign || !newholder) return res.status(400).json({ error: "Missing required parameters" });
         try {
             addTransaction(parseInt(cid), newholder, sign);
@@ -27,7 +27,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/merge", (req, res) => {
-        const { origin, target, sign, vol } = req.body || req.query;
+        const { origin, target, sign, vol } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
         try {
             mergeCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
@@ -39,7 +39,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/split", (req, res) => {
-        const { origin, target, sign, vol } = req.body || req.query;
+        const { origin, target, sign, vol } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
         try {
             splitCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
@@ -51,7 +51,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/coin", (req, res) => {
-        const id = req.body?.id || req.query?.id;
+        const id = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!id) return res.status(400).json({ error: "Missing coin ID" });
         try {
             const coin = getCoin(parseInt(id));
@@ -75,7 +75,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/coins", (req, res) => {
-        const ids = req.body?.ids || req.query?.ids;
+        const ids = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
         try {
             const result: { [key: number]: Coin } = {};
@@ -90,7 +90,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/coin-hashes", (req, res) => {
-        const ids = req.body?.ids || req.query?.ids;
+        const ids = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
         try {
             const result: { [key: number]: string } = {};
