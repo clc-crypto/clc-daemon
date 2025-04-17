@@ -30,7 +30,9 @@ app.use(cors());
     const privateKey = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/privkey.pem', 'utf8');
     const certificate = fs.readFileSync('/etc/letsencrypt/live/clc.ix.tc/fullchain.pem', 'utf8');
     const credentials = { key: privateKey, cert: certificate };
-    https.createServer(credentials, app).listen(443, () => {
+
+    const server = https.createServer(credentials, app);
+    server.listen(443, '0.0.0.0', () => {
         console.log(`HTTPS Server running on https://clc.ix.tc:443`);
     });
 })();

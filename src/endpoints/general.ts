@@ -61,6 +61,18 @@ function register(app: Express, config: Config) {
         }
     });
 
+    // @ts-ignore
+    app.get("/coin/:id", (req, res) => {
+        const id = req.params.id;
+        if (!id) return res.status(400).json({ error: "Missing coin ID" });
+        try {
+            const coin = getCoin(parseInt(id));
+            res.json({ coin });
+        } catch (e: any) {
+            res.status(404).json({ error: e.message });
+        }
+    });
+
     //@ts-ignore
     dualRoute("/coins", (req, res) => {
         const ids = req.body?.ids || req.query?.ids;
