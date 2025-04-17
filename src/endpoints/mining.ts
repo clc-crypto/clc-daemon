@@ -61,8 +61,7 @@ function register(app: Express, config: Config) {
 
     // @ts-ignore
     dualRoute("/challenge-solved", (req, res) => {
-        const { holder, sign, hash } = req.body || req.query;
-        console.log("Q: " + JSON.stringify(req.body));
+        const { holder, sign, hash } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!sign || !holder || !hash) return res.status(400).json({ error: "Missing parameters" });
 
         try {
