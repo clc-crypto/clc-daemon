@@ -1,139 +1,113 @@
-import { Socket } from 'net';
+import { Express } from 'express';
 import Config from "../types/config";
 import { addTransaction, getCoin } from "../ledger";
 import { mergeCoins } from "../merge";
 import { splitCoins } from "../split";
 import fs from "fs";
-import {Coin} from "../types/ledger";
-import {sha256} from "../cryptoUtils";
+import { Coin } from "../types/ledger";
+import { sha256 } from "../cryptoUtils";
 
-function register(socket: Socket, config: Config) {
-    socket.on('data', (data) => {
+function register(app: Express, config: Config) {
+    const dualRoute = (path: string, handler: any) => {
+        app.get(path, handler);
+        app.post(path, handler);
+    };
+
+    //@ts-ignore
+    dualRoute("/transaction", (req, res) => {
+        const { cid, sign, newholder } = req.body || req.query;
+        if (!cid || !sign || !newholder) return res.status(400).json({ error: "Missing required parameters" });
         try {
-            function handleTransaction(request: any, socket: Socket) {
-                try {
-                    if (!request.cid || !request.sign || !request.newholder) {
-                        throw new Error("Missing required parameters");
-                    }
-                    addTransaction(parseInt(request.cid), request.newholder, request.sign);
-                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleMerge(request: any, socket: Socket) {
-                try {
-                    if (!request.origin || !request.target || !request.sign || !request.vol) {
-                        throw new Error("Missing required parameters");
-                    }
-                    mergeCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
-                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleSplit(request: any, socket: Socket) {
-                try {
-                    if (!request.origin || !request.target || !request.sign || !request.vol) {
-                        throw new Error("Missing required parameters");
-                    }
-                    splitCoins(config, config.ledgerDirectory, parseInt(request.origin), parseInt(request.target), request.sign, parseFloat(request.vol));
-                    socket.write(JSON.stringify({ message: "success" }) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleCoin(request: any, socket: Socket) {
-                try {
-                    if (request.id === undefined) throw new Error("Missing coin ID");
-                    const coin = getCoin(request.id);
-                    socket.write(JSON.stringify({coin}) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleCoins(request: any, socket: Socket) {
-                try {
-                    if (request.ids === undefined) throw new Error("Missing coin IDs");
-                    type Res = {
-                        [key: number]: Coin
-                    }
-                    const res: Res = {};
-                    for (const id of request.ids) {
-                        res[parseInt(id)] = getCoin(parseInt(id));
-                    }
-                    socket.write(JSON.stringify(res) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleCoinHashes(request: any, socket: Socket) {
-                try {
-                    if (request.ids === undefined) throw new Error("Missing coin IDs");
-                    type Res = {
-                        [key: number]: string
-                    }
-                    const res: Res = {};
-                    for (const id of request.ids) {
-                        res[id] = sha256(JSON.stringify(getCoin(id).transactions));
-                    }
-                    socket.write(JSON.stringify(res) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleLedgerLength(socket: Socket) {
-                try {
-                    const length = parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8"));
-                    socket.write(JSON.stringify({length}) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-
-            function handleCirculation(socket: Socket) {
-                try {
-                    const circulation = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
-                    socket.write(JSON.stringify({ circulation: circulation}) + "\x1e");
-                } catch (e: any) {
-                    socket.write(JSON.stringify({ error: e.message }) + "\x1e");
-                }
-            }
-            const request = JSON.parse(data.toString());
-            switch (request.endpoint) {
-                case "transaction":
-                    handleTransaction(request.data, socket);
-                    break;
-                case "merge":
-                    handleMerge(request.data, socket);
-                    break;
-                case "split":
-                    handleSplit(request.data, socket);
-                    break;
-                case "coin":
-                    handleCoin(request.data, socket);
-                    break;
-                case "coins":
-                    handleCoins(request.data, socket);
-                    break;
-                case "coin-hashes":
-                    handleCoinHashes(request.data, socket);
-                    break;
-                case "ledger-length":
-                    handleLedgerLength(socket);
-                    break;
-                case "circulation":
-                    handleCirculation(socket);
-                    break;
-            }
+            addTransaction(parseInt(cid), newholder, sign);
+            res.json({ message: "success" });
         } catch (e: any) {
-            console.log(e.message);
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/merge", (req, res) => {
+        const { origin, target, sign, vol } = req.body || req.query;
+        if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
+        try {
+            mergeCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
+            res.json({ message: "success" });
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/split", (req, res) => {
+        const { origin, target, sign, vol } = req.body || req.query;
+        if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
+        try {
+            splitCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
+            res.json({ message: "success" });
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/coin", (req, res) => {
+        const id = req.body?.id || req.query?.id;
+        if (!id) return res.status(400).json({ error: "Missing coin ID" });
+        try {
+            const coin = getCoin(parseInt(id));
+            res.json({ coin });
+        } catch (e: any) {
+            res.status(404).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/coins", (req, res) => {
+        const ids = req.body?.ids || req.query?.ids;
+        if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
+        try {
+            const result: { [key: number]: Coin } = {};
+            for (const id of ids) {
+                result[parseInt(id)] = getCoin(parseInt(id));
+            }
+            res.json(result);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/coin-hashes", (req, res) => {
+        const ids = req.body?.ids || req.query?.ids;
+        if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
+        try {
+            const result: { [key: number]: string } = {};
+            for (const id of ids) {
+                result[id] = sha256(JSON.stringify(getCoin(id).transactions));
+            }
+            res.json(result);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/ledger-length", (req, res) => {
+        try {
+            const length = parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8"));
+            res.json({ length });
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/circulation", (req, res) => {
+        try {
+            const circulation = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
+            res.json({ circulation });
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
         }
     });
 }
