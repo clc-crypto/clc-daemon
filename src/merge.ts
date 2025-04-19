@@ -36,6 +36,7 @@ function mergeCoins(config: Config, LEDGER_PATH: string, originId: number, targe
         // If fee is not paid, and the transaction is merging into the dev fee address, and it's within the allowed percentage, throw an error
         throw new FeeNotPaidError(originId);
     }
+    if (target.paidFee !== undefined && !target.paidFee) throw new Error("Target coin #" + targetId + " has not paid dev fees");
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
     if (!originKey.verify(sha256(targetId + " " + target.transactions.length + " " + vol), signature)) throw new InvalidMergeOriginSignatureError();
 
