@@ -2,6 +2,7 @@ import fs from "fs";
 import Config from "./types/config";
 import {getCoin, incrementLastId} from "./ledger";
 import {sha256} from "./cryptoUtils";
+import {setJob} from "./endpoints/mining";
 
 type Hashes = {
     [key: number]: string
@@ -26,6 +27,7 @@ export default async function syncDaemon(daemon: string, config: Config) {
                     ids: ids
                 })
             })).json());
+            console.log(dCoins)
             if (dCoins.error) {
                 console.log("ERR DOWNLOAD:", dCoins.error);
                 return;

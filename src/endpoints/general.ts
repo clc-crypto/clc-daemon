@@ -7,10 +7,41 @@ import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
 
+function mirror(endpoint: string, data: any) {
+    for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
+        fetch(mirror + "/" + endpoint, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).catch(e => console.log("Error mirroring: " + e.message));
+    }
+}
+
 function register(app: Express, config: Config) {
-    const dualRoute = (path: string, handler: any) => {
-        app.get(path, handler);
-        app.post(path, handler);
+    function restrict(req: any, res: any, next: any) {
+        if (!config.filterChanges) return next();
+        const clientIP = req.ip || req.connection.remoteAddress;
+
+        // IPv6-mapped IPv4 address handling
+        const normalizedIP = clientIP.replace('::ffff:', '');
+
+        if (normalizedIP === config.filterChanges) {
+            next();
+        } else {
+            res.status(403).send('IP not allowed: ' + normalizedIP);
+        }
+    }
+
+    const dualRoute = (path: string, handler: any, restrictor?: any) => {
+        if (restrictor) {
+            app.get(path, restrictor, handler);
+            app.post(path, restrictor, handler);
+        } else {
+            app.get(path, handler);
+            app.post(path, handler);
+        }
     };
 
     //@ts-ignore
@@ -18,36 +49,39 @@ function register(app: Express, config: Config) {
         const { cid, sign, newholder } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!cid || !sign || !newholder) return res.status(400).json({ error: "Missing required parameters" });
         try {
+            mirror("transaction", { cid, sign, newholder });
             addTransaction(parseInt(cid), newholder, sign);
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
-    });
+    }, restrict);
 
     //@ts-ignore
     dualRoute("/merge", (req, res) => {
         const { origin, target, sign, vol } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
         try {
+            mirror("merge", { origin, target, sign, vol });
             mergeCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
-    });
+    }, restrict);
 
     //@ts-ignore
     dualRoute("/split", (req, res) => {
         const { origin, target, sign, vol } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
         try {
+            mirror("split", { origin, target, sign, vol });
             splitCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
-    });
+    }, restrict);
 
     //@ts-ignore
     dualRoute("/coin", (req, res) => {
@@ -75,7 +109,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/coins", (req, res) => {
-        const ids = Object.keys(req.body).length !== 0 ? req.body : req.query;
+        const { ids } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
         try {
             const result: { [key: number]: Coin } = {};
@@ -90,7 +124,7 @@ function register(app: Express, config: Config) {
 
     //@ts-ignore
     dualRoute("/coin-hashes", (req, res) => {
-        const ids = Object.keys(req.body).length !== 0 ? req.body : req.query;
+        const { ids } = Object.keys(req.body).length !== 0 ? req.body : req.query;
         if (!ids) return res.status(400).json({ error: "Missing coin IDs" });
         try {
             const result: { [key: number]: string } = {};
@@ -104,7 +138,7 @@ function register(app: Express, config: Config) {
     });
 
     //@ts-ignore
-    dualRoute("/ledger-length", (req, res) => {
+    dualRoute("/ledger-length", (_, res) => {
         try {
             const length = parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8"));
             res.json({ length });
@@ -114,7 +148,7 @@ function register(app: Express, config: Config) {
     });
 
     //@ts-ignore
-    dualRoute("/circulation", (req, res) => {
+    dualRoute("/circulation", (_, res) => {
         try {
             const circulation = parseFloat(fs.readFileSync("circulation.save", "utf-8"));
             res.json({ circulation });
@@ -122,6 +156,27 @@ function register(app: Express, config: Config) {
             res.status(500).json({ error: e.message });
         }
     });
+
+    //@ts-ignore
+    dualRoute("/config", (_, res) => {
+        try {
+            const cfg = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+            res.json(cfg);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/mirrors", (_, res) => {
+        try {
+            const mirrors = JSON.parse(fs.readFileSync("mirrors.json", "utf-8"));
+            res.json(mirrors);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    })
 }
 
 export default register;
+export { mirror };

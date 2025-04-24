@@ -6,3 +6,4 @@ package-lock.json
 diff.save
 circulation.save
 config.json
+mirrors.json

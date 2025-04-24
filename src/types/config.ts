@@ -8,7 +8,8 @@ type Config = {
     adjust: bigint,
     maxSupply: number,
     devFeeAddress: number,
-    devFeePercent: number
+    devFeePercent: number,
+    filterChanges?: string,
 }
 
 export default Config;
