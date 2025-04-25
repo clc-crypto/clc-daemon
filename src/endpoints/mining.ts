@@ -39,7 +39,7 @@ function cycle(config: Config) {
                 },
                 body: JSON.stringify(data),
                 agent: agent
-            }).catch(e => console.log("Error mirroring: " + e.message));
+            }).catch((e: any) => console.log("Error mirroring: " + e.message));
         }
     }
 
