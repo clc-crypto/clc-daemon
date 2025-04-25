@@ -75,6 +75,7 @@ function register(app: Express, config: Config) {
             next();
         } else {
             res.status(403).send('IP not allowed: ' + normalizedIP);
+            console.log("Denied ip: " + normalizedIP);
         }
     }
     const dualRoute = (path: string, handler: any, restrictor?: any) => {
@@ -124,7 +125,7 @@ function register(app: Express, config: Config) {
         dualRoute("/set-challenge", (req: any, res: any) => {
             const { seed, diff, circulation, reward, lf } = Object.keys(req.body).length !== 0 ? req.body : req.query;
             if (!seed || !diff || !circulation || !reward || !lf) return res.status(400).json({ error: "Missing parameters" });
-
+            console.log("Received job from master:", seed, diff, circulation, reward, lf)
             setJob(diff, seed, circulation, reward, lf);
         }, restrict);
     }
