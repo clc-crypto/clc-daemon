@@ -16,10 +16,10 @@ function register(app: Express, config: Config) {
                 await waitForFree(mirror);
                 take(mirror);
                 betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
-                    console.log("Mirroring, res: " + data)
+                    console.log("General mirroring, res: " + data)
                     free(mirror);
                 }).catch((e: any) => {
-                    console.log("Error mirroring: " + e.message);
+                    console.log("Error general mirroring: " + e.message);
                     free(mirror);
                 })
             })();
@@ -60,6 +60,7 @@ function register(app: Express, config: Config) {
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
+            console.log("error: transaction " + e.message);
         }
     }, restrict);
 
@@ -73,6 +74,7 @@ function register(app: Express, config: Config) {
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
+            console.log("error: merge " + e.message);
         }
     }, restrict);
 
@@ -86,6 +88,7 @@ function register(app: Express, config: Config) {
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
+            console.log("error: split " + e.message);
         }
     }, restrict);
 
