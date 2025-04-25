@@ -2,8 +2,7 @@ import { Express } from 'express';
 import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
 import fs from "fs";
-import https from 'https';
-import fetch from 'node-fetch';
+import betterFetch from "../betterFetch";
 
 let SEED = Math.random() + "" + Math.random() + "";
 let REWARD = 0;
@@ -27,27 +26,15 @@ function setUp(config: Config) {
 }
 
 function cycle(config: Config) {
-    const agent = new https.Agent({
-        localAddress: config.myIp
-    });
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            fetch(mirror + "/" + endpoint, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-                agent: agent
-            }).catch((e: any) => console.log("Error mirroring: " + e.message));
+            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1").catch((e: any) => console.log(e.message))
         }
     }
 
     if (toID) clearTimeout(toID);
-    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff))
-        DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
-    else
-        DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
+    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
+    else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
     fs.writeFileSync("diff.save", DIFF);
@@ -70,19 +57,9 @@ function cycle(config: Config) {
 }
 
 function register(app: Express, config: Config) {
-    const agent = new https.Agent({
-        localAddress: config.myIp
-    });
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            fetch(mirror + "/" + endpoint, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-                agent: agent
-            }).catch((e: any) => console.log("Error mirroring: " + e.message));
+            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1").catch((e: any) => console.log(e.message))
         }
     }
 

@@ -7,7 +7,7 @@ import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
 import https from 'https';
-import fetch from 'node-fetch';
+import betterFetch from "../betterFetch";
 
 function register(app: Express, config: Config) {
     const agent = new https.Agent({
@@ -15,14 +15,7 @@ function register(app: Express, config: Config) {
     });
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            fetch(mirror + "/" + endpoint, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-                agent: agent
-            }).catch((e: any) => console.log("Error mirroring: " + e.message));
+            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1").catch((e: any) => console.log(e.message))
         }
     }
 
