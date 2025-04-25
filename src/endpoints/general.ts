@@ -6,16 +6,12 @@ import { splitCoins } from "../split";
 import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
-import https from 'https';
 import betterFetch from "../betterFetch";
 
 function register(app: Express, config: Config) {
-    const agent = new https.Agent({
-        localAddress: config.myIp
-    });
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1").catch((e: any) => console.log(e.message))
+            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).catch((e: any) => console.log(e.message))
         }
     }
 
