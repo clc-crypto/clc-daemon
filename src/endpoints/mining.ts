@@ -42,13 +42,13 @@ function cycle(config: Config) {
     SEED = Math.random() + "" + Math.random() + "";
     lastFound = Date.now();
 
-    mirror("set-challenge", {
+    setTimeout(() => mirror("set-challenge", {
         seed: SEED,
         diff: DIFF,
         reward: REWARD,
         circulation: CIRCULATION,
         lf: lastFound
-    });
+    }), 500);
 
     toID = setTimeout(() => {
         console.log("Took too long!");
@@ -126,6 +126,7 @@ function register(app: Express, config: Config) {
             if (!seed || !diff || !circulation || !reward || !lf) return res.status(400).json({ error: "Missing parameters" });
             console.log("Received job from master:", seed, diff, circulation, reward, lf)
             setJob(diff, seed, circulation, reward, lf);
+            mirror("set-challenge", { seed, diff, circulation, reward, lf });
         }, restrict);
     }
 }
