@@ -6,12 +6,12 @@
 </head>
 <body>
 <script>
-    fetch("http://localhost:7070/coin-hashes", {
+    fetch("https://master.centrix.fi/coin-hashes", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ ids: [0, 1, 2, 3] })
+        body: JSON.stringify({ ids: [18558]})
     });
 </script>
 </body>

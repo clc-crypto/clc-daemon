@@ -3,6 +3,7 @@ import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
 import fs from "fs";
 import betterFetch from "../betterFetch";
+import {free, take, waitForFree} from "./busy";
 
 let SEED = Math.random() + "" + Math.random() + "";
 let REWARD = 0;
@@ -28,7 +29,17 @@ function setUp(config: Config) {
 function cycle(config: Config) {
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => console.log("Mirroring, res: " + data)).catch((e: any) => console.log(e.message))
+            (async () => {
+                await waitForFree(mirror);
+                take(mirror);
+                betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
+                    console.log("Mirroring, res: " + data)
+                    free(mirror);
+                }).catch((e: any) => {
+                    console.log("Error mirroring: " + e.message);
+                    free(mirror);
+                })
+            })();
         }
     }
 
@@ -59,7 +70,17 @@ function cycle(config: Config) {
 function register(app: Express, config: Config) {
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => console.log("Mirroring, res: " + data)).catch((e: any) => console.log(e.message))
+            (async () => {
+                await waitForFree(mirror);
+                take(mirror);
+                betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
+                    console.log("Mirroring, res: " + data)
+                    free(mirror);
+                }).catch((e: any) => {
+                    console.log("Error mirroring: " + e.message);
+                    free(mirror);
+                })
+            })();
         }
     }
 
