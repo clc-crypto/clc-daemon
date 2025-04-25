@@ -59,7 +59,7 @@ function cycle(config: Config) {
 function register(app: Express, config: Config) {
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).catch((e: any) => console.log(e.message))
+            betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => console.log("Mirroring, res: " + data)).catch((e: any) => console.log(e.message))
         }
     }
 
