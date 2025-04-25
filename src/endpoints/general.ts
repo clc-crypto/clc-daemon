@@ -6,20 +6,26 @@ import { splitCoins } from "../split";
 import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
-
-function mirror(endpoint: string, data: any) {
-    for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-        fetch(mirror + "/" + endpoint, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).catch(e => console.log("Error mirroring: " + e.message));
-    }
-}
+import https from 'https';
+import fetch from 'node-fetch';
 
 function register(app: Express, config: Config) {
+    const agent = new https.Agent({
+        localAddress: config.myIp
+    });
+    function mirror(endpoint: string, data: any) {
+        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
+            fetch(mirror + "/" + endpoint, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                agent: agent
+            }).catch(e => console.log("Error mirroring: " + e.message));
+        }
+    }
+
     function restrict(req: any, res: any, next: any) {
         if (!config.filterChanges) return next();
         const clientIP = req.ip || req.connection.remoteAddress;
@@ -179,4 +185,3 @@ function register(app: Express, config: Config) {
 }
 
 export default register;
-export { mirror };

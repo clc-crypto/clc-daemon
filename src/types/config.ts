@@ -10,6 +10,7 @@ type Config = {
     devFeeAddress: number,
     devFeePercent: number,
     filterChanges?: string,
+    myIp?: string
 }
 
 export default Config;

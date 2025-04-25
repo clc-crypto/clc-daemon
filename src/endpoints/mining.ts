@@ -2,6 +2,8 @@ import { Express } from 'express';
 import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
 import fs from "fs";
+import https from 'https';
+import fetch from 'node-fetch';
 
 let SEED = Math.random() + "" + Math.random() + "";
 let REWARD = 0;
@@ -24,19 +26,23 @@ function setUp(config: Config) {
     }, config.targetTimeout);
 }
 
-function mirror(endpoint: string, data: any) {
-    for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-        fetch(mirror + "/" + endpoint, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).then(res => res.text()).catch(e => console.log("Error mirroring: " + e.message))
-    }
-}
-
 function cycle(config: Config) {
+    const agent = new https.Agent({
+        localAddress: config.myIp
+    });
+    function mirror(endpoint: string, data: any) {
+        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
+            fetch(mirror + "/" + endpoint, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                agent: agent
+            }).catch(e => console.log("Error mirroring: " + e.message));
+        }
+    }
+
     if (toID) clearTimeout(toID);
     if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff))
         DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
@@ -64,6 +70,22 @@ function cycle(config: Config) {
 }
 
 function register(app: Express, config: Config) {
+    const agent = new https.Agent({
+        localAddress: config.myIp
+    });
+    function mirror(endpoint: string, data: any) {
+        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
+            fetch(mirror + "/" + endpoint, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                agent: agent
+            }).catch(e => console.log("Error mirroring: " + e.message));
+        }
+    }
+
     function restrict(req: any, res: any, next: any) {
         if (!config.filterChanges) return next();
         const clientIP = req.ip || req.connection.remoteAddress;
