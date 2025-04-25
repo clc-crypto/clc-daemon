@@ -18,6 +18,7 @@ loadLedger(config);
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.set('trust proxy', true);
 
 (async () => {
     if (process.argv.length == 4 && (process.argv[2] === "--sync" || process.argv[2] === "-s")) {
