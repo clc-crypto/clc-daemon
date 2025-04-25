@@ -175,7 +175,7 @@ function register(app: Express, config: Config) {
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
-    })
+    });
 }
 
 export default register;
