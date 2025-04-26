@@ -115,6 +115,7 @@ function register(app: Express, config: Config) {
             console.log("Received job from master:", seed, diff, circulation, reward, lf)
             setJob(diff, seed, circulation, reward, lf);
             mirror("set-challenge", { seed, diff, circulation, reward, lf });
+            res.json({ message: "success" });
         }, restrict);
     }
 }
