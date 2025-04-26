@@ -20,7 +20,7 @@ export default async function syncDaemon(daemon: string, config: Config) {
 
             console.log("Downloading coins", ids);
             const chunkSize = 10000;
-            let dCoins = [];
+            let dCoins: Record<string, any> = {}; // <-- make it an object
 
             for (let i = 0; i < ids.length; i += chunkSize) {
                 const chunk = ids.slice(i, i + chunkSize);
@@ -39,7 +39,10 @@ export default async function syncDaemon(daemon: string, config: Config) {
                     return;
                 }
 
-                dCoins.push(...result);
+                // Assume result is an array, map it into dCoins
+                for (const coin of result) {
+                    dCoins[coin.id] = coin; // <-- assume each coin has an `id` field
+                }
             }
 
             for (const coinId in dCoins) {
