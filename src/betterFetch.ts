@@ -29,6 +29,13 @@ function betterFetch(urlString: string, localAddress: string, data: any): Promis
         });
 
         req.on('error', reject);
+
+        // Set a timeout for the request (1500 ms)
+        req.setTimeout(1500, () => {
+            req.destroy(); // Destroy the request
+            resolve('timed out'); // Resolve with "timed out" instead of error
+        });
+
         req.write(postData); // send the data
         req.end();
     });
