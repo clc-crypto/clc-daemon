@@ -17,21 +17,31 @@ export default async function syncDaemon(daemon: string, config: Config) {
         if (myLength < length) {
             const ids: number[] = [];
             for (let i = Math.abs(myLength + 1); i < length + 1; i++) ids.push(i);
+
             console.log("Downloading coins", ids);
-            const dCoins = (await (await fetch(daemon + "/coins", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ids: ids
-                })
-            })).json());
-            console.log(dCoins)
-            if (dCoins.error) {
-                console.log("ERR DOWNLOAD:", dCoins.error);
-                return;
+            const chunkSize = 10000;
+            let dCoins = [];
+
+            for (let i = 0; i < ids.length; i += chunkSize) {
+                const chunk = ids.slice(i, i + chunkSize);
+
+                const response = await fetch(daemon + "/coins", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ ids: chunk })
+                });
+
+                const result = await response.json();
+                if (result.error) {
+                    console.log("ERR DOWNLOAD:", result.error);
+                    return;
+                }
+
+                dCoins.push(...result);
             }
+
             for (const coinId in dCoins) {
                 fs.writeFileSync(config.ledgerDirectory + "/" + coinId + ".coin.json", JSON.stringify(dCoins[coinId], null, 2), "utf-8");
                 incrementLastId();
