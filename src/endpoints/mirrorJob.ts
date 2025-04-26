@@ -21,7 +21,7 @@ function resolveJobs() {
         for (const ip of JSON.parse(fs.readFileSync("mirrors.json", "utf-8"))) {
             if (jobs[ip] && !resolving.includes(ip)) {
                 resolving.push(ip);
-                const job = jobs[ip].pop();
+                const job = jobs[ip].shift();
                 if (!job) continue;
                 if (jobs[ip].length === 0) delete jobs[ip];
                 betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data).then(res => {
