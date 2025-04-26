@@ -24,7 +24,12 @@ async function resolveJobs() {
             if (jobs[ip] && jobs[ip].length !== 0) {
                 const job = jobs[ip].shift();
                 if (!job) continue;
-                await betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data);
+                try {
+                    const res = await betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data);
+                    console.log("Mirroring response (" + ip + "): " + res);
+                } catch (e: any) {
+                    console.log(e.message);
+                }
             }
         }
     } catch (e: any) {
