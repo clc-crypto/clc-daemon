@@ -13,26 +13,14 @@ function setUp(cfg: Config) {
     config = cfg;
 }
 
-let resolving: Array<string> = [];
-
-function resolveJobs() {
+async function resolveJobs() {
     try {
         if (config === null) return;
         for (const ip of JSON.parse(fs.readFileSync("mirrors.json", "utf-8"))) {
-            if (jobs[ip] && jobs[ip].length > 0 && !resolving.includes(ip)) {
-                resolving.push(ip);
+            if (jobs[ip] && jobs[ip].length !== 0) {
                 const job = jobs[ip].shift();
-                if (!job) {
-                    resolving = resolving.filter(fip => fip !== ip);
-                    continue;
-                }
-                betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data).then(res => {
-                    resolving = resolving.filter(fip => fip !== ip);
-                    console.log("Mirroring response (" + ip + "): " + res);
-                }).catch(e => {
-                    resolving = resolving.filter(fip => fip !== ip);
-                    console.log("Error mirroring: " + e.message);
-                });
+                if (!job) continue;
+                await betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data);
             }
         }
     } catch (e: any) {
