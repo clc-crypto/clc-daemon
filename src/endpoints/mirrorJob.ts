@@ -25,7 +25,7 @@ function resolveJobs() {
                 if (!job) continue;
                 if (jobs[ip].length === 0) delete jobs[ip];
 
-                betterFetch(job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data).then(res => {
+                betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data).then(res => {
                     resolving = resolving.filter(fip => fip !== ip);
                     console.log("Mirroring response (" + ip + "): " + res);
                 }).catch(e => {
