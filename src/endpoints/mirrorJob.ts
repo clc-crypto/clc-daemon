@@ -26,7 +26,7 @@ async function resolveJobs() {
                 if (!job) continue;
                 try {
                     const res = await betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data);
-                    console.log("Mirroring response (" + ip + "): " + res);
+                    console.log("Mirroring response (" + ip + ", /" + job.endpoint + "): " + res);
                 } catch (e: any) {
                     console.log(e.message);
                 }
