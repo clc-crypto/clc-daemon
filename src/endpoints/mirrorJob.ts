@@ -19,11 +19,13 @@ function resolveJobs() {
     try {
         if (config === null) return;
         for (const ip of JSON.parse(fs.readFileSync("mirrors.json", "utf-8"))) {
-            if (jobs[ip] && !resolving.includes(ip)) {
+            if (jobs[ip] && jobs[ip].length > 0 && !resolving.includes(ip)) {
                 resolving.push(ip);
                 const job = jobs[ip].shift();
-                if (!job) continue;
-                if (jobs[ip].length === 0) delete jobs[ip];
+                if (!job) {
+                    resolving = resolving.filter(fip => fip !== ip);
+                    continue;
+                }
                 betterFetch(ip + "/" + job.endpoint, config.myIp === undefined ? "0.0.0.0" : config.myIp, job.data).then(res => {
                     resolving = resolving.filter(fip => fip !== ip);
                     console.log("Mirroring response (" + ip + "): " + res);
