@@ -1,92 +1,114 @@
 import fs from "fs";
 import Config from "./types/config";
-import {getCoin, incrementLastId} from "./ledger";
-import {sha256} from "./cryptoUtils";
-import {setJob} from "./endpoints/mining";
+import { getCoin, incrementLastId } from "./ledger";
+import { sha256 } from "./cryptoUtils";
+import { setJob } from "./endpoints/mining";
 
 type Hashes = {
-    [key: number]: string
+    [key: number]: string;
+};
+
+const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
 };
 
 export default async function syncDaemon(daemon: string, config: Config) {
     console.log("Syncing...");
+    const chunkSize = 10000;
+
     while (true) {
         const myLength = parseInt(fs.readFileSync(config.ledgerDirectory + "/last.id", "utf-8"));
         const length = (await (await fetch(daemon + "/ledger-length")).json()).length;
-        console.log("My length:", length, "Target length:", length);
+        console.log("My length:", myLength, "Target length:", length);
+
         if (myLength < length) {
-            const ids: number[] = [];
-            for (let i = Math.abs(myLength + 1); i < length + 1; i++) ids.push(i);
+            const ids = [];
+            for (let i = myLength + 1; i <= length; i++) ids.push(i);
 
-            console.log("Downloading coins", ids);
-            const chunkSize = 10000;
-            let dCoins: Record<string, any> = {}; // <-- make it an object
+            console.log("Downloading missing coins", ids);
+            const dCoins: Record<string, any> = {};
 
-            for (let i = 0; i < ids.length; i += chunkSize) {
-                const chunk = ids.slice(i, i + chunkSize);
-
+            for (const chunk of chunkArray(ids, chunkSize)) {
                 const response = await fetch(daemon + "/coins", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ ids: chunk })
                 });
-
                 const result = await response.json();
                 if (result.error) {
                     console.log("ERR DOWNLOAD:", result.error);
                     return;
                 }
 
-                for (const coin in result) {
-                    dCoins[coin] = result[coin];
-                }
+                Object.assign(dCoins, result);
             }
 
             for (const coinId in dCoins) {
-                fs.writeFileSync(config.ledgerDirectory + "/" + coinId + ".coin.json", JSON.stringify(dCoins[coinId], null, 2), "utf-8");
+                fs.writeFileSync(
+                    `${config.ledgerDirectory}/${coinId}.coin.json`,
+                    JSON.stringify(dCoins[coinId], null, 2),
+                    "utf-8"
+                );
                 incrementLastId();
             }
         }
 
+        // Now validate hashes
         const myHashes: Hashes = {};
-        for (let im = 0; im < myLength; im++) {
-            myHashes[im] = sha256(JSON.stringify(getCoin(im).transactions));
+        for (let i = 0; i < myLength; i++) {
+            myHashes[i] = sha256(JSON.stringify(getCoin(i).transactions));
         }
-        const ids: number[] = [];
+
+        const ids = [];
         for (let i = 0; i < length; i++) ids.push(i);
-        const targetHashes = (await (await fetch(daemon + "/coin-hashes", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ids
-            })
-        })).json());
+
+        const targetHashes: Hashes = {};
+
+        console.log("Downloading coin hashes...");
+        for (const chunk of chunkArray(ids, chunkSize)) {
+            const response = await fetch(daemon + "/coin-hashes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: chunk })
+            });
+            const chunkHashes = await response.json();
+            Object.assign(targetHashes, chunkHashes);
+        }
+
         let correct = true;
-        const incorrect = [];
+        const incorrect: number[] = [];
         for (const coinID in myHashes) {
             if (myHashes[coinID] !== targetHashes[coinID]) {
                 console.log("Incorrect hash:", coinID);
                 correct = false;
-                incorrect.push(coinID);
+                incorrect.push(Number(coinID));
             }
         }
         if (correct) break;
-        console.log("Updating coins", incorrect);
-        const dCoins = (await (await fetch(daemon + "/coins", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ids: incorrect
-            })
-        })).json());
-        for (const coinId in dCoins) {
-            fs.writeFileSync(config.ledgerDirectory + "/" + coinId + ".coin.json", JSON.stringify(dCoins[coinId], null, 2), "utf-8");
+
+        console.log("Redownloading incorrect coins:", incorrect);
+        const fixedCoins: Record<string, any> = {};
+
+        for (const chunk of chunkArray(incorrect, chunkSize)) {
+            const response = await fetch(daemon + "/coins", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: chunk })
+            });
+            const chunkCoins = await response.json();
+            Object.assign(fixedCoins, chunkCoins);
+        }
+
+        for (const coinId in fixedCoins) {
+            fs.writeFileSync(
+                `${config.ledgerDirectory}/${coinId}.coin.json`,
+                JSON.stringify(fixedCoins[coinId], null, 2),
+                "utf-8"
+            );
         }
     }
 }
