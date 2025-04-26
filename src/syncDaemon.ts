@@ -39,9 +39,8 @@ export default async function syncDaemon(daemon: string, config: Config) {
                     return;
                 }
 
-                // Assume result is an array, map it into dCoins
-                for (const coin of result) {
-                    dCoins[coin.id] = coin; // <-- assume each coin has an `id` field
+                for (const coin in result) {
+                    dCoins[coin] = coin;
                 }
             }
 
