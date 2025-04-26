@@ -26,7 +26,7 @@ function setUp(config: Config) {
     }, config.targetTimeout);
 }
 
-function cycle(config: Config) {
+async function cycle(config: Config) {
     function mirror(endpoint: string, data: any) {
         for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
             (async () => {
@@ -53,13 +53,13 @@ function cycle(config: Config) {
     SEED = Math.random() + "" + Math.random() + "";
     lastFound = Date.now();
 
-    setTimeout(() => mirror("set-challenge", {
+    mirror("set-challenge", {
         seed: SEED,
         diff: DIFF,
         reward: REWARD,
         circulation: CIRCULATION,
         lf: lastFound
-    }), 500);
+    });
 
     toID = setTimeout(() => {
         console.log("Took too long!");
