@@ -40,7 +40,7 @@ export default async function syncDaemon(daemon: string, config: Config) {
                 }
 
                 for (const coin in result) {
-                    dCoins[coin] = coin;
+                    dCoins[coin] = result[coin];
                 }
             }
 
