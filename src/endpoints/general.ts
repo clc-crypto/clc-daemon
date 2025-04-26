@@ -6,26 +6,9 @@ import { splitCoins } from "../split";
 import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
-import betterFetch from "../betterFetch";
-import {free, take, waitForFree} from "./busy";
+import { mirror } from "./mirrorJob";
 
 function register(app: Express, config: Config) {
-    function mirror(endpoint: string, data: any) {
-        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            (async () => {
-                await waitForFree(mirror);
-                take(mirror);
-                betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
-                    console.log("General mirroring, res: " + data)
-                    free(mirror);
-                }).catch((e: any) => {
-                    console.log("Error general mirroring: " + e.message);
-                    free(mirror);
-                })
-            })();
-        }
-    }
-
     function restrict(req: any, res: any, next: any) {
         if (!config.filterChanges) return next();
         const clientIP = req.ip || req.connection.remoteAddress;

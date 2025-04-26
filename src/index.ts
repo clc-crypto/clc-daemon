@@ -5,6 +5,7 @@ import fs from 'fs';
 import { loadLedger } from "./ledger";
 import Config from "./types/config";
 import {setUp, register as registerMining, setJob} from "./endpoints/mining";
+import {setUp as setUpMirror} from "./endpoints/mirrorJob";
 import registerGeneral from "./endpoints/general";
 import syncDaemon from "./syncDaemon";
 
@@ -13,6 +14,7 @@ const useHttps = false;
 // Load config
 const config: Config = JSON.parse(fs.readFileSync("config.json", 'utf8'));
 loadLedger(config);
+setUpMirror(config);
 
 // Start Express app
 const app = express();

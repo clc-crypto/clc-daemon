@@ -2,8 +2,7 @@ import { Express } from 'express';
 import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
 import fs from "fs";
-import betterFetch from "../betterFetch";
-import {free, take, waitForFree} from "./busy";
+import { mirror } from "./mirrorJob";
 
 let SEED = Math.random() + "" + Math.random() + "";
 let REWARD = 0;
@@ -27,22 +26,6 @@ function setUp(config: Config) {
 }
 
 async function cycle(config: Config) {
-    function mirror(endpoint: string, data: any) {
-        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            (async () => {
-                await waitForFree(mirror);
-                take(mirror);
-                betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
-                    console.log("Mirroring, res: " + data)
-                    free(mirror);
-                }).catch((e: any) => {
-                    console.log("Error mirroring: " + e.message);
-                    free(mirror);
-                })
-            })();
-        }
-    }
-
     if (toID) clearTimeout(toID);
     if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
     else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
@@ -68,22 +51,6 @@ async function cycle(config: Config) {
 }
 
 function register(app: Express, config: Config) {
-    function mirror(endpoint: string, data: any) {
-        for (const mirror of JSON.parse(fs.readFileSync("./mirrors.json", "utf-8"))) {
-            (async () => {
-                await waitForFree(mirror);
-                take(mirror);
-                betterFetch(mirror + "/" + endpoint, config.myIp ? config.myIp : "127.0.0.1", data).then(data => {
-                    console.log("Mirroring, res: " + data)
-                    free(mirror);
-                }).catch((e: any) => {
-                    console.log("Error mirroring: " + e.message);
-                    free(mirror);
-                })
-            })();
-        }
-    }
-
     function restrict(req: any, res: any, next: any) {
         if (!config.filterChanges) return next();
         const clientIP = req.ip || req.connection.remoteAddress;
