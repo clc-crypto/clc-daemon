@@ -13,7 +13,11 @@ function setUp(cfg: Config) {
     config = cfg;
 }
 
+let resolving = false;
+
 async function resolveJobs() {
+    if (resolving) return; // prevent overlapping
+    resolving = true;
     try {
         if (config === null) return;
         for (const ip of JSON.parse(fs.readFileSync("mirrors.json", "utf-8"))) {
@@ -25,6 +29,8 @@ async function resolveJobs() {
         }
     } catch (e: any) {
         console.log(e.message);
+    } finally {
+        resolving = false;
     }
 }
 
