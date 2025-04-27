@@ -16,7 +16,7 @@ function betterFetch(urlString: string, localAddress: string, data: any): Promis
             method: 'POST',
             localAddress: localAddress,
             headers: {
-                'User-Agent': 'Node.js',
+                'User-Agent': 'Centrix Daemon',
                 'Content-Type': 'application/json',
                 'Content-Length': Buffer.byteLength(postData),
             },

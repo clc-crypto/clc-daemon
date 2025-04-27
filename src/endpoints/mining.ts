@@ -3,6 +3,7 @@ import Config from "../types/config";
 import createMinedCoin from "../addMinedCoin";
 import fs from "fs";
 import { mirror } from "./mirrorJob";
+import {getCoin} from "../ledger";
 
 let SEED = Math.random() + "" + Math.random() + "";
 let REWARD = 0;
@@ -91,8 +92,9 @@ function register(app: Express, config: Config) {
         if (!sign || !holder || !hash) return res.status(400).json({ error: "Missing parameters" });
 
         try {
-            mirror("challenge-solved", { holder, sign, hash });
             const id = createMinedCoin(config.ledgerDirectory, REWARD, holder, sign, hash, SEED, DIFF);
+            mirror("challenge-solved", { holder, sign, hash });
+            mirror("set-block-genesis-time", { time: getCoin(id).genesisTime, id });
             console.log(`Mined #${id}`);
             if (config.filterChanges) return res.json({ id });
             CIRCULATION += REWARD;
@@ -116,6 +118,20 @@ function register(app: Express, config: Config) {
             setJob(diff, seed, circulation, reward, lf);
             mirror("set-challenge", { seed, diff, circulation, reward, lf });
             res.json({ message: "success" });
+        }, restrict);
+        dualRoute("/set-block-genesis-time", (req: any, res: any) => {
+            try {
+                const { time, id } = Object.keys(req.body).length !== 0 ? req.body : req.query;
+                if (!time || !id) return res.status(400).json({ error: "Missing parameters" });
+                mirror("set-block-genesis-time", { time, id });
+                const lp = config.ledgerDirectory + "/" + id + ".coin.json";
+                const coin = JSON.parse(fs.readFileSync(lp, "utf-8"));
+                coin.genesisTime = time;
+                fs.writeFileSync(lp, JSON.stringify(coin, null, 2));
+                res.json({ message: "success" });
+            } catch (e: any) {
+                res.json({ error: e.message });
+            }
         }, restrict);
     }
 }
