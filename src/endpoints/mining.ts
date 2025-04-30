@@ -28,10 +28,16 @@ function setUp(config: Config) {
 
 async function cycle(config: Config) {
     if (toID) clearTimeout(toID);
-    const adj = BigInt(Math.round((Math.abs(Date.now() - lastFound - TARGET)))) ** 5n;
+    const adj = BigInt(Math.round((Math.abs(Date.now() - lastFound - TARGET))));
     console.log("Adjust: " + adj);
-    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) DIFF = (BigInt("0x" + DIFF) + (BigInt("0x" + config.adjust) * adj)).toString(16);
-    else DIFF = (BigInt("0x" + DIFF) - (BigInt("0x" + config.adjust) * adj)).toString(16);
+    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) {
+        console.log("Decreasing diff...");
+        DIFF = (BigInt("0x" + DIFF) + (BigInt("0x" + config.adjust) * adj)).toString(16);
+    }
+    else {
+        console.log("Increasing diff...");
+        DIFF = (BigInt("0x" + DIFF) - (BigInt("0x" + config.adjust) * adj)).toString(16);
+    }
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
     console.log("New diff: " + DIFF);
