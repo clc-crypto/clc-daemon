@@ -30,11 +30,10 @@ async function cycle(config: Config) {
     if (toID) clearTimeout(toID);
     if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) {
         console.log("Decreasing diff...");
-        DIFF = (BigInt("0x" + DIFF) * BigInt("0x" + config.adjust) / 100n).toString(16);
-    }
-    else {
+        DIFF = (BigInt("0x" + DIFF) * BigInt(config.adjust) / 100n).toString(16);  // Decrease difficulty
+    } else {
         console.log("Increasing diff...");
-        DIFF = (BigInt("0x" + DIFF) * BigInt("0x" + (100 - config.adjust + 100)) / 100n).toString(16);
+        DIFF = (BigInt("0x" + DIFF) * 100n / BigInt(config.adjust)).toString(16);  // Increase difficulty
     }
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
