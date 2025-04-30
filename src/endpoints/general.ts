@@ -7,6 +7,7 @@ import fs from "fs";
 import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
 import { mirror } from "./mirrorJob";
+import addCentract, {clcTxDaemon} from "../centractDaemon";
 
 function register(app: Express, config: Config) {
     function restrict(req: any, res: any, next: any) {
@@ -39,13 +40,50 @@ function register(app: Express, config: Config) {
         if (!cid || !sign || !newholder) return res.status(400).json({ error: "Missing required parameters" });
         try {
             mirror("transaction", { cid, sign, newholder });
+            const holder = getCoin(cid).transactions[getCoin(cid).transactions.length - 1].holder;
             addTransaction(parseInt(cid), newholder, sign);
+            clcTxDaemon(parseInt(cid), holder, newholder, sign);
             res.json({ message: "success" });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
             console.log("error: transaction " + e.message);
         }
     }, restrict);
+
+    //@ts-ignore
+    dualRoute("/centract", (req, res) => {
+        const { cid, sign, newholder, centract, centractsign, feesign } = Object.keys(req.body).length !== 0 ? req.body : req.query;
+        if (!cid || !sign || !newholder || !centract || !centractsign) return res.status(400).json({ error: "Missing required parameters" });
+        try {
+            const feeVol = Math.sqrt(config.centractFeePercent === undefined ? 1.2 : config.centractFeePercent * centract.trim().split("\n").length) / 100 * getCoin(cid).val;
+            fetch(`http://localhost:7070/merge?origin=${cid}&target=${config.devFeeAddress}&vol=${feeVol}&sign=${feesign}`).then(res => res.json()).then(r => {
+                if (r.error) {
+                    res.status(500).json({ error: "Error paying fee: " + r.error });
+                    return;
+                }
+                try {
+                    addCentract(cid, sign, newholder, centract, centractsign);
+                    res.json({ message: "success" });
+                } catch (e: any) {
+                    res.status(500).json({ error: e.message });
+                }
+            }).catch((e: any) => res.json({ error: "Error fetching to pay fees: " + e.message }));
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+            console.log("error: centract " + e.message);
+        }
+    }, restrict);
+
+    app.get("/centract-fee/:id", (req, res) => {
+        try {
+            const id = parseInt(req.params.id);
+            const lines = parseInt(req.query.lines as string);
+            const val = getCoin(id).val;
+            res.json({ fee: Math.sqrt(config.centractFeePercent === undefined ? 1.2 : config.centractFeePercent * lines) / 100 * val });
+        } catch (e: any) {
+            res.json({ error: e.message });
+        }
+    });
 
     //@ts-ignore
     dualRoute("/merge", (req, res) => {
@@ -163,6 +201,16 @@ function register(app: Express, config: Config) {
     dualRoute("/mirrors", (_, res) => {
         try {
             const mirrors = JSON.parse(fs.readFileSync("mirrors.json", "utf-8"));
+            res.json(mirrors);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    //@ts-ignore
+    dualRoute("/centract-events", (_, res) => {
+        try {
+            const mirrors = JSON.parse(fs.readFileSync("centract-events.json", "utf-8"));
             res.json(mirrors);
         } catch (e: any) {
             res.status(500).json({ error: e.message });

@@ -9,6 +9,7 @@ type Config = {
     maxSupply: number,
     devFeeAddress: number,
     devFeePercent: number,
+    centractFeePercent?: number,
     filterChanges?: string,
     myIp?: string
 }

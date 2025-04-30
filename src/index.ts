@@ -8,6 +8,7 @@ import {setUp, register as registerMining, setJob} from "./endpoints/mining";
 import {setUp as setUpMirror} from "./endpoints/mirrorJob";
 import registerGeneral from "./endpoints/general";
 import syncDaemon from "./syncDaemon";
+import {init} from "./centractDaemon";
 
 const useHttps = false;
 
@@ -31,6 +32,7 @@ app.set('trust proxy', true);
     setUp(config);
     registerGeneral(app, config);
     registerMining(app, config);
+    if (!config.filterChanges) init(config);
 
     if (process.argv.length == 4 && (process.argv[2] === "--sync" || process.argv[2] === "-s")) {
         fetch(process.argv[3] + "/get-challenge").then(res => res.json()).then(data => {

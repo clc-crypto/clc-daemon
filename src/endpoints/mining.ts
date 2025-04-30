@@ -28,10 +28,13 @@ function setUp(config: Config) {
 
 async function cycle(config: Config) {
     if (toID) clearTimeout(toID);
-    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
-    else DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
+    const adj = BigInt(Math.round((Math.abs(Date.now() - lastFound - TARGET)))) ** 5n;
+    console.log("Adjust: " + adj);
+    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) DIFF = (BigInt("0x" + DIFF) + (BigInt("0x" + config.adjust) * adj)).toString(16);
+    else DIFF = (BigInt("0x" + DIFF) - (BigInt("0x" + config.adjust) * adj)).toString(16);
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
+    console.log("New diff: " + DIFF);
     fs.writeFileSync("diff.save", DIFF);
 
     SEED = Math.random() + "" + Math.random() + "";

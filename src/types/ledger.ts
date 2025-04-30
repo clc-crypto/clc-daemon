@@ -11,17 +11,26 @@ type MergeTransformationTarget = {
     height: number
 }
 
+type Centract = {
+    centractSignature: string
+    transactionSignature: string
+    transactionAddress: string
+    code: string
+}
+
 type Transaction = {
     holder: string,
     transactionSignature: string,
-    transformationType?: "split" | "merge"
+    transformationType?: "merge"
     transformation?: MergeTransformationOrigin | MergeTransformationTarget
+    centract?: Centract
 }
 
 type Coin = {
     val: number, // the value of the coin (what amount of 1 coin is it worth)
     genesisTime: number,
     paidFee?: boolean,
+    locked?: boolean,
     seed?: string,
     diff?: string,
     hash?: string,
