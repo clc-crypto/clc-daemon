@@ -28,15 +28,13 @@ function setUp(config: Config) {
 
 async function cycle(config: Config) {
     if (toID) clearTimeout(toID);
-    const adj = BigInt(Math.round((Math.abs(Date.now() - lastFound - TARGET))));
-    console.log("Adjust: " + adj);
     if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) {
         console.log("Decreasing diff...");
-        DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
+        DIFF = (BigInt("0x" + DIFF) * BigInt("0x" + config.adjust) / 100n).toString(16);
     }
     else {
         console.log("Increasing diff...");
-        DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
+        DIFF = (BigInt("0x" + DIFF) * BigInt("0x" + (100 - config.adjust + 100)) / 100n).toString(16);
     }
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');

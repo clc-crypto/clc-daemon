@@ -5,7 +5,7 @@ type Config = {
     startingDiff: string,
     target: number,
     targetTimeout: number,
-    adjust: bigint,
+    adjust: number,
     maxSupply: number,
     devFeeAddress: number,
     devFeePercent: number,
