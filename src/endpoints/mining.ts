@@ -28,12 +28,12 @@ function setUp(config: Config) {
 
 async function cycle(config: Config) {
     if (toID) clearTimeout(toID);
-    if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) {
+    if (Date.now() - lastFound > TARGET) {
         console.log("Decreasing diff...");
-        DIFF = (BigInt("0x" + DIFF) * BigInt(config.adjust) / 100n).toString(16);  // Decrease difficulty
+        DIFF = (BigInt("0x" + DIFF) * 100n / BigInt(config.adjust)).toString(16);
     } else {
         console.log("Increasing diff...");
-        DIFF = (BigInt("0x" + DIFF) * 100n / BigInt(config.adjust)).toString(16);  // Increase difficulty
+        DIFF = (BigInt("0x" + DIFF) * BigInt(config.adjust) / 100n).toString(16);
     }
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
