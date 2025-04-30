@@ -32,11 +32,11 @@ async function cycle(config: Config) {
     console.log("Adjust: " + adj);
     if (Date.now() - lastFound > TARGET && BigInt("0x" + DIFF) < BigInt("0x" + config.startingDiff)) {
         console.log("Decreasing diff...");
-        DIFF = (BigInt("0x" + DIFF) + (BigInt("0x" + config.adjust) * adj)).toString(16);
+        DIFF = (BigInt("0x" + DIFF) + BigInt("0x" + config.adjust)).toString(16);
     }
     else {
         console.log("Increasing diff...");
-        DIFF = (BigInt("0x" + DIFF) - (BigInt("0x" + config.adjust) * adj)).toString(16);
+        DIFF = (BigInt("0x" + DIFF) - BigInt("0x" + config.adjust)).toString(16);
     }
 
     DIFF = DIFF.replace('-', '').padStart(64, '0');
