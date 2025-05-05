@@ -2,7 +2,8 @@ type MergeTransformationOrigin = {
     target: number,
     originSignature: string,
     vol: number,
-    height: number
+    height: number,
+    isSplit?: boolean
 }
 
 type MergeTransformationTarget = {

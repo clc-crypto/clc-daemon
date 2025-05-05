@@ -102,11 +102,11 @@ function register(app: Express, config: Config) {
     //@ts-ignore
     dualRoute("/split", (req, res) => {
         const { origin, target, sign, vol } = Object.keys(req.body).length !== 0 ? req.body : req.query;
-        if (!origin || !target || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
+        if (!origin || !sign || !vol) return res.status(400).json({ error: "Missing required parameters" });
         try {
-            mirror("split", { origin, target, sign, vol });
-            splitCoins(config, config.ledgerDirectory, parseInt(origin), parseInt(target), sign, parseFloat(vol));
-            res.json({ message: "success" });
+            mirror("split", { origin, sign, vol });
+            const id = splitCoins(config, config.ledgerDirectory, parseInt(origin), sign, parseFloat(vol));
+            res.json({ id });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
             console.log("error: split " + e.message);

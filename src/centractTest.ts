@@ -4,7 +4,7 @@ const ecdsa = new ec('secp256k1');
 (async () => {
     const kp = ecdsa.keyFromPrivate("612805dfe5e3229a9c676cea4ae4d8410eb5a6010849a200dc7dc3fc93411380")
     const cid = 64;
-    const coin = (await (await fetch("http://localhost:7070/coin/" + cid)).json()).coin;
+    const coin = (await (await fetch("https://clc.ix.tc/coin/" + cid)).json()).coin;
 
     const centract = `
 .timeout ${Date.now() + 20000}
@@ -13,14 +13,14 @@ const ecdsa = new ec('secp256k1');
     const rkp = ecdsa.genKeyPair();
     console.log("Transacting to: " + rkp.getPublic().encode("hex", false) + " (" + rkp.getPrivate().toString("hex") + ")");
     console.log("Using centract: " + centract);
-    const fee = (await (await fetch("http://localhost:7070/centract-fee/" + cid + "?lines=" + centract.trim().split("\n").length)).json()).fee;
-    const feeLength = (await (await fetch("http://localhost:7070/coin/0")).json()).coin.transactions.length;
+    const fee = (await (await fetch("https://clc.ix.tc/centract-fee/" + cid + "?lines=" + centract.trim().split("\n").length)).json()).fee;
+    const feeLength = (await (await fetch("https://clc.ix.tc/coin/0")).json()).coin.transactions.length;
     console.log(fee, feeLength)
     const transactionSignature = kp.sign(sha256(rkp.getPublic().encode("hex", false))).toDER("hex");
     const centractSignature = kp.sign(sha256(centract.trim() + "\n" + (coin.transactions.length + 1))).toDER("hex");
     const feeSignature = kp.sign(sha256("0 " + feeLength + " " + fee)).toDER("hex");
 
-    fetch(`http://localhost:7070/centract?cid=${cid}&sign=${transactionSignature}&newholder=${rkp.getPublic().encode("hex", false)}&centract=${encodeURI(centract)}&centractsign=${centractSignature}&feesign=${feeSignature}`).then(res => res.json()).then(data => {
+    fetch(`https://clc.ix.tc/centract?cid=${cid}&sign=${transactionSignature}&newholder=${rkp.getPublic().encode("hex", false)}&centract=${encodeURI(centract)}&centractsign=${centractSignature}&feesign=${feeSignature}`).then(res => res.json()).then(data => {
         console.log(data);
         // const rkp2 = ecdsa.genKeyPair();
         // const cid2 = 122;

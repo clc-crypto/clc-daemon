@@ -34,8 +34,8 @@ class FeeNotPaidError extends Error {
     }
 }
 
-function splitCoins(config: Config, LEDGER_PATH: string, originId: number, targetId: number, mergeSignature: string, vol: number) {
-    if (parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + 1 !== targetId) throw new InvalidNewCoinId();
+function splitCoins(config: Config, LEDGER_PATH: string, originId: number, splitSignature: string, vol: number): number {
+    const targetId = parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + 1;
     const origin = getCoin(originId);
 
     if (vol > origin.val) throw new InvalidSplitVolumeError("not enough funds at origin.");
@@ -44,23 +44,47 @@ function splitCoins(config: Config, LEDGER_PATH: string, originId: number, targe
 
     const originKey = ecdsa.keyFromPublic(origin.transactions[origin.transactions.length - 1].holder, "hex");
 
-    if (!originKey.verify(sha256(targetId + " 1 " + vol), mergeSignature)) throw new InvalidSplitOriginMergeSignatureError();
+    if (!originKey.verify(sha256(targetId + " 1 " + vol), splitSignature)) {
+        if (!originKey.verify(sha256("split " + origin.transactions.length + " 0 " + vol), splitSignature)) throw new InvalidSplitOriginMergeSignatureError();
+    }
 
     incrementLastId();
     const coin: Coin = {
-        val: 0,
+        val: vol,
         genesisTime: Date.now(),
         transactions: [
             {
                 holder: origin.transactions[origin.transactions.length - 1].holder,
                 transactionSignature: origin.transactions[origin.transactions.length - 1].transactionSignature,
+                transformationType: "merge",
+                transformation: {
+                    origin: originId,
+                    vol: vol,
+                    height: origin.transactions.length
+                }
             }
         ]
     }
 
-    fs.writeFileSync(LEDGER_PATH + "/" + parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
+    origin.transactions.push({
+        holder: origin.transactions[origin.transactions.length - 1].holder,
+        transactionSignature: origin.transactions[origin.transactions.length - 1].transactionSignature,
+        transformationType: "merge",
+        transformation: {
+            target: targetId,
+            originSignature: splitSignature,
+            vol: -vol,
+            height: 0,
+            isSplit: true
+        }
+    });
 
-    mergeCoins(config, LEDGER_PATH, originId, targetId, mergeSignature, vol);
+    origin.val -= vol
+
+    fs.writeFileSync(LEDGER_PATH + "/" + parseInt(fs.readFileSync(LEDGER_PATH + "/last.id", "utf-8")) + ".coin.json", JSON.stringify(coin, null, 2), "utf-8");
+    fs.writeFileSync(LEDGER_PATH + "/" + originId + ".coin.json", JSON.stringify(origin, null, 2), "utf-8");
+
+    return targetId;
 }
 
 export { splitCoins, InvalidSplitOriginSignatureError, InvalidSplitOriginMergeSignatureError, InvalidSplitVolumeError, InvalidNewCoinId };
