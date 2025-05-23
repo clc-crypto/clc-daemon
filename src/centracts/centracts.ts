@@ -35,6 +35,7 @@ function executeScope(scope: Scope, scopeGlobals: Record<string, string>) {
         const regex = new RegExp(escapedKey, 'g');
         code = code.replace(regex, scopeGlobals[key]);
     }
+    console.log(code)
 
     for (const line of code.split("\n")) {
         if (line.split(" ")[0] === "resolve") return "resolve";
@@ -54,7 +55,7 @@ function executeScope(scope: Scope, scopeGlobals: Record<string, string>) {
 }
 
 function verify(centract: string) {
-    const scopes = scopeCode(centract);
+    const scopes = scopeCode(centract);safeEvalExpression
     let foundTimeoutScope = false;
     for (const scope of scopes) {
         if (scope.event.type === "timeout") {

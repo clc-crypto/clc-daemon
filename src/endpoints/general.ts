@@ -1,4 +1,5 @@
 import { Express } from 'express';
+import { exec } from "child_process";
 import Config from "../types/config";
 import { addTransaction, getCoin } from "../ledger";
 import { mergeCoins } from "../merge";
@@ -8,6 +9,31 @@ import { Coin } from "../types/ledger";
 import { sha256 } from "../cryptoUtils";
 import { mirror } from "./mirrorJob";
 import addCentract, {clcTxDaemon} from "../centractDaemon";
+
+function update(updateTime: number) {
+    console.log("Polling updates...");
+    exec("git pull", (error, stdout, stderr) => {
+        if (error) return console.error("Failed to fetch from git: " + stderr);
+        if (stdout.includes("Already up to date.")) return console.log("Already up to date, won't update.");
+        console.log("Fetched from git.");
+        exec("tsc", (error, _, stderr) => {
+            if (error) return console.error("Failed to compile: " + stderr);
+            console.log("Compiled update.");
+            exec("npm install", (error, _, stderr) => {
+                if (error) return console.error("Failed to update deps " + stderr);
+                console.log("Compiled TS");
+                const timeout = updateTime - Date.now();
+                console.log("Going to reload in " + (timeout / 1000) + " seconds...");
+                setTimeout(() => {
+                    exec("pm2 reload clc-daemon --update-env", (error, stdout, stderr) => {
+                        if (error) return console.error("Failed to reload: " + stderr);
+                        console.log("Reloaded daemon!");
+                    });
+                }, timeout);
+            });
+        });
+    });
+}
 
 function register(app: Express, config: Config) {
     function restrict(req: any, res: any, next: any) {
@@ -67,7 +93,7 @@ function register(app: Express, config: Config) {
                 } catch (e: any) {
                     res.status(500).json({ error: e.message });
                 }
-            }).catch((e: any) => res.json({ error: "Error fetching to pay fees: " + e.message }));
+            }).catch((e: any) => res.json({ error: "Error fetching to pay fees: " + e.error }));
         } catch (e: any) {
             res.status(500).json({ error: e.message });
             console.log("error: centract " + e.message);
@@ -216,6 +242,37 @@ function register(app: Express, config: Config) {
             res.status(500).json({ error: e.message });
         }
     });
+
+    if (config.filterChanges) {
+        //@ts-ignore
+        dualRoute("/poll-updates", (req, res) => {
+            try {
+                const { time } = Object.keys(req.body).length !== 0 ? req.body : req.query;
+                mirror("poll-updates", { time });
+                if (!time) return res.json({ error: "Missing time param" });
+                update(time);
+                res.json({ message: "success" });
+            } catch (e: any) {
+                res.status(500).json({ error: e.message });
+            }
+        }, restrict);
+    } else {
+        //@ts-ignore
+        dualRoute("/push-updates", (req, res) => {
+            try {
+                const { time } = Object.keys(req.body).length !== 0 ? req.body : req.query;
+                const { adminPass } = Object.keys(req.body).length !== 0 ? req.body : req.query;
+                if (adminPass !== config.adminPass) return res.status(401);
+                mirror("poll-updates", { time });
+                if (!time) return res.json({ error: "Missing time param" });
+                update(time);
+                res.json({ message: "success" });
+            } catch (e: any) {
+                res.status(500).json({ error: e.message });
+            }
+        }, restrict);
+    }
 }
 
 export default register;
+export { update };

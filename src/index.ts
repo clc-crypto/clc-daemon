@@ -6,9 +6,11 @@ import { loadLedger } from "./ledger";
 import Config from "./types/config";
 import {setUp, register as registerMining, setJob} from "./endpoints/mining";
 import {setUp as setUpMirror} from "./endpoints/mirrorJob";
-import registerGeneral from "./endpoints/general";
+import registerGeneral, { update } from "./endpoints/general";
 import syncDaemon from "./syncDaemon";
 import {init} from "./centractDaemon";
+
+update(Date.now() + 10000);
 
 const useHttps = false;
 
@@ -53,7 +55,7 @@ app.set('trust proxy', true);
         });
     } else {
         app.listen(config.apiPort, '0.0.0.0', () => {
-            console.log(`HTTPS Server running on https://localhost:${config.apiPort}`);
+            console.log(`HTTPS Server running on http://localhost:${config.apiPort}`);
         });
     }
 })();

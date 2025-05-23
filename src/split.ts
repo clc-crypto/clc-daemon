@@ -8,11 +8,6 @@ import Config from "./types/config";
 
 const ecdsa = new ec('secp256k1');
 
-class InvalidSplitOriginSignatureError extends Error {
-    constructor() {
-        super("The split operation's origin holder's signature is invalid");
-    }
-}
 class InvalidSplitOriginMergeSignatureError extends Error {
     constructor() {
         super("The split operation's origin holder's signature is invalid");
@@ -21,11 +16,6 @@ class InvalidSplitOriginMergeSignatureError extends Error {
 class InvalidSplitVolumeError extends Error {
     constructor(emsg?: string) {
         super("The split operation's volume is invalid" + (emsg ? ",  " + emsg : ""));
-    }
-}
-class InvalidNewCoinId extends Error {
-    constructor() {
-        super("Invalid split operation's new coin id");
     }
 }
 class FeeNotPaidError extends Error {
@@ -87,4 +77,4 @@ function splitCoins(config: Config, LEDGER_PATH: string, originId: number, split
     return targetId;
 }
 
-export { splitCoins, InvalidSplitOriginSignatureError, InvalidSplitOriginMergeSignatureError, InvalidSplitVolumeError, InvalidNewCoinId };
+export { splitCoins, InvalidSplitOriginMergeSignatureError, InvalidSplitVolumeError };

@@ -11,7 +11,8 @@ type Config = {
     devFeePercent: number,
     centractFeePercent?: number,
     filterChanges?: string,
-    myIp?: string
+    myIp?: string,
+    adminPass?: string,
 }
 
 export default Config;

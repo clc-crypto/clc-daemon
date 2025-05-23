@@ -13,6 +13,7 @@
     "commander": "^13.1.0",
     "cors": "^2.8.5",
     "elliptic": "^6.6.1",
+    "ethers": "^6.14.0",
     "express": "^4.21.2",
     "jsep": "^1.4.0",
     "node-fetch": "^3.3.2",

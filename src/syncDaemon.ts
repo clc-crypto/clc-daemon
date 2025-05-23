@@ -45,6 +45,7 @@ export default async function syncDaemon(daemon: string, config: Config) {
                 }
 
                 Object.assign(dCoins, result);
+                console.log("Next chunk...")
             }
 
             for (const coinId in dCoins) {
